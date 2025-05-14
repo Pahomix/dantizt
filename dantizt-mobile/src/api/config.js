@@ -1,14 +1,15 @@
-// Используем переменные окружения или дефолтные значения
-const USE_PRODUCTION = process.env.NODE_ENV === 'production' || __DEV__ === false;
+import { API_URL_PRODUCTION, API_URL_DEVELOPMENT, NODE_ENV } from '@env';
 
-// Продакшен URL использует домен dantizt.ru
-const PRODUCTION_API_URL = 'https://dantizt.ru/api/v1';
-
-// Локальный URL для разработки
-const DEVELOPMENT_API_URL = 'http://127.0.0.1:8000/api/v1';
+// Определяем, используется ли продакшен-режим
+const USE_PRODUCTION = NODE_ENV === 'production' || __DEV__ === false;
 
 // Выбираем URL в зависимости от окружения
-export const API_URL = USE_PRODUCTION ? PRODUCTION_API_URL : DEVELOPMENT_API_URL;
+// Если переменные окружения не определены, используем значения по умолчанию
+const PRODUCTION_URL = API_URL_PRODUCTION || 'https://dantizt.ru/api/v1';
+const DEVELOPMENT_URL = API_URL_DEVELOPMENT || 'http://127.0.0.1:8000/api/v1';
+
+// Экспортируем итоговый URL
+export const API_URL = USE_PRODUCTION ? PRODUCTION_URL : DEVELOPMENT_URL;
 
 export const ENDPOINTS = {
   LOGIN: '/auth/login',
