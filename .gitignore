@@ -19,8 +19,9 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-.env
-.venv
+# .env файлы включены в репозиторий по запросу
+# .env
+# .venv
 venv/
 ENV/
 
