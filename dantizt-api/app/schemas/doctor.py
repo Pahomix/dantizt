@@ -1,0 +1,132 @@
+from pydantic import BaseModel, Field, validator
+from typing import Optional
+from app.schemas.user import UserOut
+
+class DoctorBase(BaseModel):
+    specialization_id: int 
+    experience_years: Optional[int] = Field(default=0)  # Разрешаем None
+    education: Optional[str] = None
+    bio: Optional[str] = None
+    average_rating: float = 0.0
+    rating_count: int = 0
+
+    @validator('experience_years')
+    def validate_experience_years(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('Experience years cannot be negative')
+        return v or 0  # Преобразуем None в 0
+
+    @validator('average_rating')
+    def validate_rating(cls, v):
+        if v < 0 or v > 5:
+            raise ValueError('Rating must be between 0 and 5')
+        return v
+
+    @validator('rating_count')
+    def validate_rating_count(cls, v):
+        if v < 0:
+            raise ValueError('Rating count cannot be negative')
+        return v
+
+class DoctorCreate(DoctorBase):
+    user_id: int
+
+class DoctorUpdateBase(BaseModel):
+    email: str
+    full_name: str
+    phone_number: Optional[str]
+    specialization_id: int
+    experience_years: Optional[int] = None  # Разрешаем None
+    education: Optional[str]
+    bio: Optional[str] = None
+
+    @validator('experience_years')
+    def validate_experience_years(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('Experience years cannot be negative')
+        return v  # Оставляем None как есть
+
+class DoctorUpdate(DoctorUpdateBase):
+    is_active: bool
+    password: Optional[str] = None
+
+class DoctorProfileUpdate(BaseModel):
+    email: str
+    full_name: str
+    phone_number: Optional[str] = None
+    specialization_id: int
+    experience_years: Optional[int] = None
+    education: Optional[str] = None
+    bio: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class SpecializationInfo(BaseModel):
+    id: int
+    name: str
+    appointment_duration: Optional[int] = 30
+
+    class Config:
+        from_attributes = True
+
+class DoctorInDB(DoctorBase):
+    id: int
+    user_id: int
+    full_name: str
+    specialization: SpecializationInfo
+
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_orm(cls, doctor):
+        if not doctor:
+            raise ValueError("Doctor object is required")
+            
+        return cls(
+            id=doctor.id,
+            user_id=doctor.user_id,
+            full_name=doctor.user.full_name if doctor.user else 'Без имени',
+            specialization=SpecializationInfo(
+                id=doctor.specialization_id, 
+                name=doctor.specialization.name if doctor.specialization else 'Без специализации',
+                appointment_duration=doctor.specialization.appointment_duration if doctor.specialization else 30
+            ),
+            specialization_id=doctor.specialization_id,
+            experience_years=doctor.experience_years,  # Будет преобразовано в 0 если None
+            education=doctor.education,
+            bio=doctor.bio
+        )
+
+class DoctorWithUser(DoctorBase):
+    id: int
+    user: UserOut
+    specialization: SpecializationInfo
+
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_orm(cls, doctor):
+        if not doctor:
+            raise ValueError("Doctor object is required")
+            
+        if not doctor.user:
+            raise ValueError("Doctor must have associated user")
+
+        return cls(
+            id=doctor.id,
+            user=UserOut.from_orm(doctor.user),
+            specialization=SpecializationInfo(
+                id=doctor.specialization_id, 
+                name=doctor.specialization.name if doctor.specialization else 'Без специализации',
+                appointment_duration=doctor.specialization.appointment_duration if doctor.specialization else 30
+            ),
+            specialization_id=doctor.specialization_id,
+            experience_years=doctor.experience_years,  # Будет преобразовано в 0 если None
+            education=doctor.education,
+            bio=doctor.bio,
+            average_rating=doctor.average_rating,
+            rating_count=doctor.rating_count
+        )

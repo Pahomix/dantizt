@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --input-text: #171717;
+  --placeholder-text: #4a4a4a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #171717;
+    --input-text: #171717;
+    --placeholder-text: #4a4a4a;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Ensure dark text in inputs and form elements */
+input,
+select,
+textarea,
+.select-input,
+.dropdown-content {
+  color: var(--input-text) !important;
+}
+
+/* Style placeholders */
+::placeholder {
+  color: var(--placeholder-text) !important;
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: var(--placeholder-text) !important;
+}
+
+::-ms-input-placeholder {
+  color: var(--placeholder-text) !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

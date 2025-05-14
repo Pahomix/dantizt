@@ -1,0 +1,11 @@
+:8000 {
+	reverse_proxy /* 127.0.0.1:8000 {
+		header_up Host {upstream_hostport}
+	}
+
+	header {
+		Access-Control-Allow-Origin *
+		Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+		Access-Control-Allow-Headers "Accept, Content-Type, Authorization"
+	}
+}

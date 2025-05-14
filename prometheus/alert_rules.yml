@@ -1,0 +1,39 @@
+groups:
+- name: DantiZT-API-Alerts
+  rules:
+  - alert: HighRequestLatency
+    expr: rate(dantizt_request_duration_seconds_sum[1m]) / rate(dantizt_request_duration_seconds_count[1m]) > 0.5
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Высокая задержка API"
+      description: "Среднее время ответа API превышает 500 мс"
+
+  - alert: HighErrorRate
+    # Исключаем 401 и 404 ошибки, так как они считаются нормальными для тестирования
+    expr: sum(increase(dantizt_requests_total{status_code=~"5..|400|403|405|406|409|422|429"}[5m])) / sum(increase(dantizt_requests_total[5m])) * 100 > 5
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Высокий процент ошибок"
+      description: "Процент критических ошибок превышает 5% за последние 5 минут (исключая 401 и 404)"
+
+  - alert: APIDown
+    expr: up{job="dantizt-api"} == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "API недоступно"
+      description: "API не отвечает на запросы"
+
+  - alert: HighRequestRate
+    expr: sum(rate(dantizt_requests_total[1m])) > 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Высокая нагрузка на API"
+      description: "Количество запросов превышает 10 в секунду"

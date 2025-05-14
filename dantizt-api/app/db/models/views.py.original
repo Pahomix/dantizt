@@ -1,0 +1,45 @@
+from sqlalchemy import Column, Integer, String, DateTime, Float
+from app.db.base import Base
+
+class PatientAllergyView(Base):
+    __tablename__ = "patient_allergy_view"
+    
+    id = Column(Integer, primary_key=True)
+    patient_name = Column(String)
+    allergy_name = Column(String)
+    severity = Column(String)
+
+class DoctorWorkloadView(Base):
+    __tablename__ = "doctor_workload_view"
+    
+    id = Column(Integer, primary_key=True)
+    doctor_name = Column(String)
+    appointments_count = Column(Integer)
+    average_duration = Column(Float)
+
+class FinancialStatisticsView(Base):
+    __tablename__ = "financial_statistics_view"
+    
+    id = Column(Integer, primary_key=True)
+    period = Column(String)
+    total_revenue = Column(Float)
+    service_type = Column(String)
+
+class TreatmentHistoryView(Base):
+    __tablename__ = "treatment_history_view"
+    
+    id = Column(Integer, primary_key=True)
+    patient_name = Column(String)
+    doctor_name = Column(String)
+    treatment_date = Column(DateTime)
+    diagnosis = Column(String)
+    treatment = Column(String)
+
+class UserActivityView(Base):
+    __tablename__ = "user_activity_view"
+    
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    last_login = Column(DateTime)
+    action_type = Column(String)
+    action_date = Column(DateTime)

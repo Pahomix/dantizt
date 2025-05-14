@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: dantizt_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dantizt_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal_network
+    restart: always
+
+  api:
+    build: ./dantizt-api
+    container_name: dantizt_api
+    volumes:
+      - ./dantizt-api:/app
+      - uploads:/app/uploads
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/dantizt_db
+      - SECRET_KEY=your_secret_key_here
+      - DOCKER=true
+    networks:
+      - internal_network
+    depends_on:
+      - db
+    restart: always
+
+  front:
+    build:
+      context: ./dantizt-front
+      args:
+        - NEXT_PUBLIC_API_URL=http://api:8000
+    container_name: dantizt_front
+    volumes:
+      - ./dantizt-front:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    networks:
+      - internal_network
+    depends_on:
+      - api
+    restart: always
+
+  nginx:
+    build: ./nginx
+    container_name: dantizt_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - uploads:/var/www/uploads
+    networks:
+      - internal_network
+      - external_network
+    depends_on:
+      - api
+      - front
+    restart: always
+
+volumes:
+  postgres_data:
+  uploads:
+
+networks:
+  internal_network:
+    driver: bridge
+    name: dantizt_internal_network
+  external_network:
+    driver: bridge
+    name: dantizt_external_network

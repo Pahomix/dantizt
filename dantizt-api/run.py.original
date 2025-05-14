@@ -1,0 +1,62 @@
+import uvicorn
+import os
+import logging
+import dotenv
+from pathlib import Path
+from app.core.config import settings
+
+# Загружаем переменные окружения из .env файла
+dotenv.load_dotenv(Path(__file__).parent / ".env")
+
+# Настраиваем логгер
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def run_obfuscation():
+    # Проверяем, включена ли обфускация
+    obfuscate_code = os.environ.get("OBFUSCATE_CODE", "false").lower() == "true"
+    
+    logger.info(f"Статус обфускации: {'включена' if obfuscate_code else 'выключена'}")
+    
+    if obfuscate_code:
+        try:
+            logger.info("Запуск обфускации кода...")
+            
+            # Проверяем наличие библиотеки astor
+            try:
+                import astor
+            except ImportError:
+                logger.error("Библиотека astor не установлена. Установите её с помощью: pip install astor==0.8.1")
+                return
+            
+            # Импортируем обфускатор
+            from app.core.obfuscator import obfuscate_project
+            
+            # Получаем корневую директорию API
+            api_root = os.path.dirname(os.path.abspath(__file__))
+            
+            # Запускаем обфускацию проекта
+            obfuscate_project(api_root)
+            logger.info("Обфускация кода завершена успешно")
+            
+            # Выводим информацию о демонстрационных файлах
+            demo_dir = os.path.join(api_root, 'obfuscation_demo')
+            logger.info(f"Демонстрационные файлы сохранены в: {demo_dir}")
+            logger.info("Сделайте скриншоты этих файлов для демонстрации обфускации в отчете")
+        except Exception as e:
+            logger.error(f"Ошибка при обфускации кода: {str(e)}")
+
+if __name__ == "__main__":
+    # Запускаем обфускацию перед запуском сервера
+    run_obfuscation()
+    
+    # Запускаем сервер
+    logger.info("Запуск API сервера...")
+    uvicorn.run(
+        "app.main:app",
+        host=settings.SERVER_HOST,
+        port=settings.SERVER_PORT,
+        reload=settings.DEBUG_MODE,
+        workers=settings.WORKERS_COUNT,
+        log_level="debug"
+    )
