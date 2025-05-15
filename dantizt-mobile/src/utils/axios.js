@@ -3,7 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LOCAL_IP = '192.168.0.240';
-const API_URL = 'https://838e0e40-2891-413a-847c-2a3d5236e193.tunnel4.com/api/v1';
+const TUNNEL_URL = 'https://838e0e40-2891-413a-847c-2a3d5236e193.tunnel4.com/api/v1';
+const PROD_URL = 'http://www.dantizt.ru/api/v1';
+
+// Используйте TUNNEL_URL для локальной разработки или PROD_URL для продакшна
+const API_URL = PROD_URL; // Измените на TUNNEL_URL для локальной разработки
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
