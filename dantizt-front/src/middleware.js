@@ -16,10 +16,18 @@ const roleRoutes = {
 const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/verify-email', '/verify-email', '/payment/success', '/payment/fail'];
 
 export function middleware(request) {
+  // Исправляем URL для работы с продакшен-сервером
+  const url = new URL(request.url);
+  // Заменяем localhost на реальный домен, если необходимо
+  if (url.hostname === 'localhost') {
+    url.hostname = new URL(BASE_URL).hostname;
+    url.protocol = new URL(BASE_URL).protocol;
+  }
+  
   const { pathname } = request.nextUrl;
   
   console.log('Middleware - Path:', pathname);
-  console.log('Middleware - Full URL:', request.url);
+  console.log('Middleware - Full URL:', url.toString());
   console.log('Middleware - Public routes:', publicRoutes);
   console.log('Middleware - Is public route:', publicRoutes.includes(pathname));
   
@@ -39,7 +47,9 @@ export function middleware(request) {
   // Если нет токенов, редиректим на страницу входа
   if (!accessToken && !refreshToken) {
     console.log('Middleware - No tokens found, redirecting to login');
-    const loginUrl = new URL('/auth/login', BASE_URL);
+    
+    // Используем исправленный URL для создания адреса перенаправления
+    const loginUrl = new URL('/auth/login', url.origin);
     console.log('Middleware - Login URL:', loginUrl.toString());
     return NextResponse.redirect(loginUrl);
   }
@@ -58,13 +68,15 @@ export function middleware(request) {
   // Если пользователь пытается зайти на главную, редиректим в зависимости от роли
   if (pathname === '/') {
     if (userRole === 'admin') {
-      return NextResponse.redirect(new URL('/admin/statistics', BASE_URL));
+      return NextResponse.redirect(new URL('/admin/statistics', url.origin));
     } else if (userRole === 'doctor') {
-      return NextResponse.redirect(new URL('/doctor', BASE_URL));
+      return NextResponse.redirect(new URL('/doctor', url.origin));
     } else if (userRole === 'patient') {
-      return NextResponse.redirect(new URL('/patient', BASE_URL));
+      return NextResponse.redirect(new URL('/patient', url.origin));
     } else if (userRole === 'reception') {
-      return NextResponse.redirect(new URL('/reception/dashboard', BASE_URL));
+      return NextResponse.redirect(new URL('/reception/dashboard', url.origin));
+    } else {
+      return NextResponse.redirect(new URL('/auth/login', url.origin));
     }
   }
 
@@ -75,7 +87,7 @@ export function middleware(request) {
                     userRole === 'doctor' ? '/doctor' : 
                     userRole === 'patient' ? '/patient' : 
                     userRole === 'reception' ? '/reception/dashboard' : '/';
-    return NextResponse.redirect(new URL(roleHome, BASE_URL));
+    return NextResponse.redirect(new URL(roleHome, url.origin));
   }
 
   return NextResponse.next();
