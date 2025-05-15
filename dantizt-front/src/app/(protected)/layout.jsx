@@ -21,7 +21,7 @@ export default function ProtectedLayout({ children }) {
 
       if (!accessToken && !refreshToken) {
         console.log('No tokens found, redirecting to login');
-        router.replace('/login');
+        router.replace('/auth/login');
         setIsLoading(false);
         return;
       }
@@ -37,7 +37,7 @@ export default function ProtectedLayout({ children }) {
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           Cookies.remove('userRole');
-          router.replace('/login');
+          router.replace('/auth/login');
         }
       } catch (error) {
         console.error('Auth verification error:', error);
@@ -45,7 +45,7 @@ export default function ProtectedLayout({ children }) {
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
         Cookies.remove('userRole');
-        router.replace('/login');
+        router.replace('/auth/login');
       } finally {
         setIsLoading(false);
       }
