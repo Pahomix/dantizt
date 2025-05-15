@@ -13,15 +13,16 @@ export const login = async (credentials) => {
     
     console.log('Tokens from response:', { access_token, refresh_token });
     
-    // Определяем, находимся ли мы в продакшен-окружении
-    const isProduction = process.env.NODE_ENV === 'production' || window.location.protocol === 'https:';
+    // Используем HTTP в любом случае, так как работаем без SSL
+    const isProduction = false;
     
     console.log('Setting cookies in environment:', isProduction ? 'production' : 'development');
     
     const cookieOptions = {
-      secure: isProduction, // true для HTTPS, false для HTTP
+      secure: false, // Всегда false, так как используем HTTP
       sameSite: 'lax',
-      path: '/' // Важно указать path для доступности кук на всех страницах
+      path: '/', // Важно указать path для доступности кук на всех страницах
+      domain: 'www.dantizt.ru' // Явно указываем домен
     };
     
     if (access_token) {
