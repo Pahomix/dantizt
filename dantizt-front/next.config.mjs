@@ -18,7 +18,9 @@ const nextConfig = {
     ];
   },
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'dantizt.ru', 'www.dantizt.ru'],
+    },
   },
 };
 
