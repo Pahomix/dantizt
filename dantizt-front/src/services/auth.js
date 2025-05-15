@@ -13,23 +13,28 @@ export const login = async (credentials) => {
     
     console.log('Tokens from response:', { access_token, refresh_token });
     
+    // Определяем, находимся ли мы в продакшен-окружении
+    const isProduction = process.env.NODE_ENV === 'production' || window.location.protocol === 'https:';
+    
+    console.log('Setting cookies in environment:', isProduction ? 'production' : 'development');
+    
+    const cookieOptions = {
+      secure: isProduction, // true для HTTPS, false для HTTP
+      sameSite: 'lax',
+      path: '/' // Важно указать path для доступности кук на всех страницах
+    };
+    
     if (access_token) {
-      Cookies.set('access_token', access_token, {
-        secure: true, // для продакшена с HTTPS
-        sameSite: 'lax'
-      });
+      Cookies.set('access_token', access_token, cookieOptions);
+      console.log('Access token cookie set');
     }
     if (refresh_token) {
-      Cookies.set('refresh_token', refresh_token, {
-        secure: true, // для продакшена с HTTPS
-        sameSite: 'lax'
-      });
+      Cookies.set('refresh_token', refresh_token, cookieOptions);
+      console.log('Refresh token cookie set');
     }
     if (role) {
-      Cookies.set('userRole', role, {
-        secure: true, // для продакшена с HTTPS
-        sameSite: 'lax'
-      });
+      Cookies.set('userRole', role, cookieOptions);
+      console.log('User role cookie set:', role);
     }
   }
   
