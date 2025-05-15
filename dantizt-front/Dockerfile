@@ -8,7 +8,7 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Установка зависимостей и глобальная установка next
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund --production=false && \
+RUN npm ci --no-audit --no-fund --production=false --legacy-peer-deps && \
     npm install -g next && \
     npm cache clean --force
 
@@ -28,7 +28,7 @@ WORKDIR /app
 
 # Устанавливаем только production зависимости
 COPY --from=builder /app/package.json /app/package-lock.json ./
-RUN npm ci --only=production --no-audit --no-fund && \
+RUN npm ci --only=production --no-audit --no-fund --legacy-peer-deps && \
     npm cache clean --force
 
 # Переносим только необходимые файлы
