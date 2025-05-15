@@ -71,10 +71,20 @@ export const verifyEmail = async (token) => {
 export const logout = async () => {
   const response = await api.post('/auth/logout');
   
-  // Удаляем куки при выходе
-  Cookies.remove('access_token');
-  Cookies.remove('refresh_token');
-  Cookies.remove('userRole');
+  // Удаляем куки при выходе, используя те же параметры, что и при установке
+  const cookieOptions = {
+    path: '/',
+    domain: 'www.dantizt.ru'
+  };
+  
+  Cookies.remove('access_token', cookieOptions);
+  Cookies.remove('refresh_token', cookieOptions);
+  Cookies.remove('userRole', cookieOptions);
+  
+  // Перенаправляем на страницу входа после успешного выхода
+  if (response.status === 200) {
+    window.location.href = '/auth/login';
+  }
   
   return response;
 };
