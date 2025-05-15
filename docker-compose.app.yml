@@ -29,12 +29,6 @@ services:
     depends_on:
       - db
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   front:
     build:
@@ -53,12 +47,6 @@ services:
     depends_on:
       - api
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   nginx:
     build: ./nginx
@@ -73,10 +61,8 @@ services:
       - internal_network
       - external_network
     depends_on:
-      api:
-        condition: service_healthy
-      front:
-        condition: service_healthy
+      - api
+      - front
     restart: always
 
 volumes:
