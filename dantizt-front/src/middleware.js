@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 
 // Базовый URL для редиректов
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.dantizt.ru';
+
+// Для отладки
+console.log('Middleware - Using BASE_URL:', BASE_URL);
 
 const roleRoutes = {
   admin: ['/admin', '/admin/users', '/admin/schedules', '/admin/services', '/admin/diagnoses', '/admin/reviews', '/admin/payments', '/admin/statistics', '/admin/settings'],
