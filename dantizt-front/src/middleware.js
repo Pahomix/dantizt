@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Базовый URL для редиректов
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
 const roleRoutes = {
   admin: ['/admin', '/admin/users', '/admin/schedules', '/admin/services', '/admin/diagnoses', '/admin/reviews', '/admin/payments', '/admin/statistics', '/admin/settings'],
   doctor: ['/doctor', '/doctor/appointments', '/doctor/patients', '/doctor/profile'],
@@ -33,7 +36,7 @@ export function middleware(request) {
   // Если нет токенов, редиректим на страницу входа
   if (!accessToken && !refreshToken) {
     console.log('Middleware - No tokens found, redirecting to login');
-    const loginUrl = new URL('/auth/login', request.url);
+    const loginUrl = new URL('/auth/login', BASE_URL);
     console.log('Middleware - Login URL:', loginUrl.toString());
     return NextResponse.redirect(loginUrl);
   }
@@ -52,13 +55,13 @@ export function middleware(request) {
   // Если пользователь пытается зайти на главную, редиректим в зависимости от роли
   if (pathname === '/') {
     if (userRole === 'admin') {
-      return NextResponse.redirect(new URL('/admin/statistics', request.url));
+      return NextResponse.redirect(new URL('/admin/statistics', BASE_URL));
     } else if (userRole === 'doctor') {
-      return NextResponse.redirect(new URL('/doctor', request.url));
+      return NextResponse.redirect(new URL('/doctor', BASE_URL));
     } else if (userRole === 'patient') {
-      return NextResponse.redirect(new URL('/patient', request.url));
+      return NextResponse.redirect(new URL('/patient', BASE_URL));
     } else if (userRole === 'reception') {
-      return NextResponse.redirect(new URL('/reception/dashboard', request.url));
+      return NextResponse.redirect(new URL('/reception/dashboard', BASE_URL));
     }
   }
 
@@ -69,7 +72,7 @@ export function middleware(request) {
                     userRole === 'doctor' ? '/doctor' : 
                     userRole === 'patient' ? '/patient' : 
                     userRole === 'reception' ? '/reception/dashboard' : '/';
-    return NextResponse.redirect(new URL(roleHome, request.url));
+    return NextResponse.redirect(new URL(roleHome, BASE_URL));
   }
 
   return NextResponse.next();
