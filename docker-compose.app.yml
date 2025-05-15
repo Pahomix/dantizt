@@ -21,7 +21,7 @@ services:
       - ./dantizt-api:/app
       - uploads:/app/uploads
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/dantizt_db
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/dantizt_db
       - SECRET_KEY=your_secret_key_here
       - DOCKER=true
     networks:
