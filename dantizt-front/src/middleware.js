@@ -7,10 +7,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.dantizt.ru';
 console.log('Middleware - Using BASE_URL:', BASE_URL);
 
 const roleRoutes = {
-  admin: ['/admin', '/admin/users', '/admin/schedules', '/admin/services', '/admin/diagnoses', '/admin/reviews', '/admin/payments', '/admin/statistics', '/admin/settings'],
-  doctor: ['/doctor', '/doctor/appointments', '/doctor/patients', '/doctor/profile'],
-  patient: ['/patient', '/patient/appointments', '/patient/medical-records', '/patient/profile'],
-  reception: ['/reception', '/reception/dashboard', '/reception/patients', '/reception/appointments', '/reception/payments', '/reception/documents', '/reception/schedules'],
+  admin: ['/dashboard', '/admin', '/admin/users', '/admin/schedules', '/admin/services', '/admin/diagnoses', '/admin/reviews', '/admin/payments', '/admin/statistics', '/admin/settings'],
+  doctor: ['/dashboard', '/doctor', '/doctor/appointments', '/doctor/patients', '/doctor/profile'],
+  patient: ['/dashboard', '/patient', '/patient/appointments', '/patient/medical-records', '/patient/profile'],
+  reception: ['/dashboard', '/reception', '/reception/dashboard', '/reception/patients', '/reception/appointments', '/reception/payments', '/reception/documents', '/reception/schedules'],
 };
 
 const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/verify-email', '/verify-email', '/payment/success', '/payment/fail'];
@@ -22,6 +22,12 @@ export function middleware(request) {
   if (url.hostname === 'localhost') {
     url.hostname = new URL(BASE_URL).hostname;
     url.protocol = new URL(BASE_URL).protocol;
+  }
+  
+  // Удаляем порт из URL, если он есть
+  if (url.port) {
+    url.port = '';
+    console.log('Middleware - Removed port from URL:', url.toString());
   }
   
   const { pathname } = request.nextUrl;
