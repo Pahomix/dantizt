@@ -61,8 +61,9 @@ debug_logs/
 uploads/
 
 # SSL certificates
-nginx/ssl/*.pem
-nginx/ssl/*.key
+# nginx/ssl/*.pem
+# nginx/ssl/*.key
+# Сертификаты включены в репозиторий по запросу
 
 # Other
 .coverage
