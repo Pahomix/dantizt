@@ -21,8 +21,8 @@ SECRET_KEY = settings.SECRET_KEY
 # Настройки cookie
 COOKIE_SETTINGS = {
     "httponly": True,
-    "secure": False,
-    "samesite": "lax",
+    "secure": False,  # Отключено, так как используем HTTP
+    "samesite": "none",  # Изменено с 'lax' на 'none' для работы в среде без HTTPS
     "path": "/"
 }
 
