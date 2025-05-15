@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Базовый URL для редиректов
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.dantizt.ru';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://www.dantizt.ru';
 
 // Для отладки
 console.log('Middleware - Using BASE_URL:', BASE_URL);
@@ -16,13 +16,8 @@ const roleRoutes = {
 const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/verify-email', '/verify-email', '/payment/success', '/payment/fail'];
 
 export function middleware(request) {
-  // Исправляем URL для работы с продакшен-сервером
+  // Создаем URL для редиректов, но не меняем протокол
   const url = new URL(request.url);
-  // Заменяем localhost на реальный домен, если необходимо
-  if (url.hostname === 'localhost') {
-    url.hostname = new URL(BASE_URL).hostname;
-    url.protocol = new URL(BASE_URL).protocol;
-  }
   
   // Удаляем порт из URL, если он есть
   if (url.port) {
