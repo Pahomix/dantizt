@@ -32,7 +32,7 @@ RUN npm ci --only=production --no-audit --no-fund --legacy-peer-deps && \
     npm cache clean --force
 
 # Переносим только необходимые файлы
-COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 
