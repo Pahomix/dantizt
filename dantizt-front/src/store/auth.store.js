@@ -28,10 +28,15 @@ export const useAuthStore = create(
           console.error('Logout error:', error);
         } finally {
           console.log('Clearing auth state');
-          // Очищаем куки при выходе
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          Cookies.remove('userRole');
+          // Очищаем куки при выходе с правильными параметрами
+          const cookieOptions = {
+            path: '/',
+            domain: 'www.dantizt.ru'
+          };
+          
+          Cookies.remove('access_token', cookieOptions);
+          Cookies.remove('refresh_token', cookieOptions);
+          Cookies.remove('userRole', cookieOptions);
           set(initialState);
         }
       },

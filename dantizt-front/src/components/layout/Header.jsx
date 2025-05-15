@@ -15,9 +15,16 @@ export default function Header() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // Очищаем куки и перенаправляем на страницу входа
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    router.push('/login');
+    try {
+      // Используем функцию logout из auth.js
+      const { logout } = await import('@/services/auth');
+      await logout();
+      
+      // Используем window.location.href вместо router.push для полной перезагрузки страницы
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

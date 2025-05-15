@@ -81,10 +81,7 @@ export const logout = async () => {
   Cookies.remove('refresh_token', cookieOptions);
   Cookies.remove('userRole', cookieOptions);
   
-  // Перенаправляем на страницу входа после успешного выхода
-  if (response.status === 200) {
-    window.location.href = '/auth/login';
-  }
+  // Не выполняем редирект здесь, так как это делается в компоненте Navbar
   
   return response;
 };

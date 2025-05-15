@@ -22,8 +22,13 @@ export default function Navbar() {
   ];
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/login');
+    try {
+      await logout();
+      // Используем window.location.href вместо router.push для полной перезагрузки страницы
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
