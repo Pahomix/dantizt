@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { BackupList } from '@/components/admin/BackupList';
+import BackupList from '@/components/admin/BackupList';
 import { useBackupStore } from '@/store/backupStore';
 
 export default function BackupsPage() {

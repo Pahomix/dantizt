@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { verifyEmail } from '@/services/auth';
 import { toast } from 'react-toastify';
 
-export default function VerifyEmail() {
+// Компонент с основным содержимым страницы
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState('verifying'); // verifying, success, error
@@ -129,5 +130,18 @@ export default function VerifyEmail() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Основной компонент страницы с обёрткой Suspense
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
