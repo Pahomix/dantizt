@@ -16,8 +16,15 @@ const roleRoutes = {
 const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/verify-email', '/verify-email', '/payment/success', '/payment/fail'];
 
 export function middleware(request) {
-  // Создаем URL для редиректов, но не меняем протокол
+  // Создаем URL для редиректов
   const url = new URL(request.url);
+  
+  // Заменяем localhost на реальный домен, но сохраняем протокол
+  if (url.hostname === 'localhost') {
+    url.hostname = new URL(BASE_URL).hostname;
+    // Не меняем протокол, чтобы не было принудительного перехода на HTTPS
+    // url.protocol = new URL(BASE_URL).protocol;
+  }
   
   // Удаляем порт из URL, если он есть
   if (url.port) {
