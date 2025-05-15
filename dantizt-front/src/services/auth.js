@@ -15,19 +15,19 @@ export const login = async (credentials) => {
     
     if (access_token) {
       Cookies.set('access_token', access_token, {
-        secure: false, // для локальной разработки
+        secure: true, // для продакшена с HTTPS
         sameSite: 'lax'
       });
     }
     if (refresh_token) {
       Cookies.set('refresh_token', refresh_token, {
-        secure: false, // для локальной разработки
+        secure: true, // для продакшена с HTTPS
         sameSite: 'lax'
       });
     }
     if (role) {
       Cookies.set('userRole', role, {
-        secure: false, // для локальной разработки
+        secure: true, // для продакшена с HTTPS
         sameSite: 'lax'
       });
     }

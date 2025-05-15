@@ -21,10 +21,14 @@ export default function Login() {
     try {
       setLoading(true);
       setError('');
+      console.log('Отправка запроса на авторизацию:', data);
+      
       const response = await loginApi({
         email: data.email,
         password: data.password,
       });
+
+      console.log('Ответ от сервера после авторизации:', response);
 
       // Проверяем наличие данных в ответе
       if (!response.data) {
@@ -39,10 +43,28 @@ export default function Login() {
         fullName: response.data.full_name,
       };
       setAuth(userData);
+      console.log('Данные пользователя сохранены в store:', userData);
 
       // Редирект на соответствующую страницу
       const redirectPath = HOME_ROUTES[response.data.role] || '/dashboard';
-      router.push(redirectPath);
+      console.log('Попытка редиректа на:', redirectPath);
+      
+      // Пробуем сначала через router
+      try {
+        router.push(redirectPath);
+      } catch (routerError) {
+        console.error('Ошибка при редиректе через router:', routerError);
+        // Альтернативный способ редиректа
+        window.location.href = redirectPath;
+      }
+      
+      // Устанавливаем таймаут для проверки редиректа
+      setTimeout(() => {
+        if (window.location.pathname.includes('/auth/login')) {
+          console.log('Редирект не произошел, пробуем альтернативный метод');
+          window.location.href = redirectPath;
+        }
+      }, 1000);
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.detail || 'Ошибка при входе';
