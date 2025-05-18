@@ -82,7 +82,7 @@ async def startup_event():
             # Получаем количество пользователей по ролям
             for role in UserRole:
                 count = await db.execute(
-                    select(func.count()).where(User.role == role)
+                    select(func.count()).where(User.role == role.value)
                 )
                 count = count.scalar() or 0
                 update_active_users(role.value, count)

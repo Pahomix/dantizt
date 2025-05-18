@@ -43,7 +43,8 @@ api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
 api_router.include_router(schedules.router, prefix="/schedules", tags=["schedules"])
 
 # Специализации
-api_router.include_router(specializations.router, prefix="/specializations", tags=["specializations"])
+# Закомментировано, т.к. этот маршрут уже добавлен в app/api/v1/api.py
+# api_router.include_router(specializations.router, prefix="/specializations", tags=["specializations"])
 
 # Платежи
 api_router.include_router(payments.router, prefix="/payments", tags=["payments"])

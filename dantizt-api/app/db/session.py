@@ -643,9 +643,237 @@ async def create_initial_data(session: AsyncSession):
         logging.error(f"Error creating initial data: {str(e)}")
         raise
 
+async def create_enum_types():
+    """Creates all necessary ENUM types and casting functions in the database."""
+    try:
+        async with engine.connect() as conn:
+            # Создаем все необходимые ENUM типы и функции приведения типов
+            await conn.execute(text("""
+                DO $BODY$
+                BEGIN
+                    -- UserRole
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'userrole') THEN
+                        CREATE TYPE "userrole" AS ENUM ('admin', 'doctor', 'patient', 'reception');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_userrole(text) RETURNS "userrole" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"userrole";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'patient'::"userrole";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "userrole");
+                    CREATE CAST (text AS "userrole") WITH FUNCTION text_to_userrole(text) AS IMPLICIT;
+                    
+                    -- AppointmentStatus
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'appointmentstatus') THEN
+                        CREATE TYPE "appointmentstatus" AS ENUM ('scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_appointmentstatus(text) RETURNS "appointmentstatus" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"appointmentstatus";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'scheduled'::"appointmentstatus";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "appointmentstatus");
+                    CREATE CAST (text AS "appointmentstatus") WITH FUNCTION text_to_appointmentstatus(text) AS IMPLICIT;
+                    
+                    -- ServiceCategory
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'servicecategory') THEN
+                        CREATE TYPE "servicecategory" AS ENUM ('therapy', 'surgery', 'diagnostics', 'consultation', 'prevention');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_servicecategory(text) RETURNS "servicecategory" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"servicecategory";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'consultation'::"servicecategory";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "servicecategory");
+                    CREATE CAST (text AS "servicecategory") WITH FUNCTION text_to_servicecategory(text) AS IMPLICIT;
+                    
+                    -- PaymentStatus
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'paymentstatus') THEN
+                        CREATE TYPE "paymentstatus" AS ENUM ('pending', 'completed', 'failed', 'refunded');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_paymentstatus(text) RETURNS "paymentstatus" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"paymentstatus";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'pending'::"paymentstatus";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "paymentstatus");
+                    CREATE CAST (text AS "paymentstatus") WITH FUNCTION text_to_paymentstatus(text) AS IMPLICIT;
+                    
+                    -- PaymentMethod
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'paymentmethod') THEN
+                        CREATE TYPE "paymentmethod" AS ENUM ('cash', 'card', 'insurance');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_paymentmethod(text) RETURNS "paymentmethod" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"paymentmethod";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'card'::"paymentmethod";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "paymentmethod");
+                    CREATE CAST (text AS "paymentmethod") WITH FUNCTION text_to_paymentmethod(text) AS IMPLICIT;
+                    
+                    -- NotificationType
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtype') THEN
+                        CREATE TYPE "notificationtype" AS ENUM ('appointment', 'reminder', 'system', 'payment');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_notificationtype(text) RETURNS "notificationtype" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"notificationtype";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'system'::"notificationtype";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "notificationtype");
+                    CREATE CAST (text AS "notificationtype") WITH FUNCTION text_to_notificationtype(text) AS IMPLICIT;
+                    
+                    -- SpecialDayType
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'specialdaytype') THEN
+                        CREATE TYPE "specialdaytype" AS ENUM ('holiday', 'vacation', 'sick_leave', 'training');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_specialdaytype(text) RETURNS "specialdaytype" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"specialdaytype";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'holiday'::"specialdaytype";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "specialdaytype");
+                    CREATE CAST (text AS "specialdaytype") WITH FUNCTION text_to_specialdaytype(text) AS IMPLICIT;
+                    
+                    -- TreatmentStatus
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'treatmentstatus') THEN
+                        CREATE TYPE "treatmentstatus" AS ENUM ('planned', 'in_progress', 'completed', 'cancelled');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_treatmentstatus(text) RETURNS "treatmentstatus" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"treatmentstatus";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'planned'::"treatmentstatus";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "treatmentstatus");
+                    CREATE CAST (text AS "treatmentstatus") WITH FUNCTION text_to_treatmentstatus(text) AS IMPLICIT;
+                    
+                    -- RecordType
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordtype') THEN
+                        CREATE TYPE "recordtype" AS ENUM ('note', 'prescription', 'diagnosis', 'test_result', 'examination');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_recordtype(text) RETURNS "recordtype" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"recordtype";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'note'::"recordtype";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "recordtype");
+                    CREATE CAST (text AS "recordtype") WITH FUNCTION text_to_recordtype(text) AS IMPLICIT;
+                    
+                    -- RecordStatus
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordstatus') THEN
+                        CREATE TYPE "recordstatus" AS ENUM ('active', 'archived', 'deleted');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_recordstatus(text) RETURNS "recordstatus" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"recordstatus";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'active'::"recordstatus";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "recordstatus");
+                    CREATE CAST (text AS "recordstatus") WITH FUNCTION text_to_recordstatus(text) AS IMPLICIT;
+                    
+                    -- CertificateStatus
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'certificatestatus') THEN
+                        CREATE TYPE "certificatestatus" AS ENUM ('issued', 'cancelled');
+                    END IF;
+                    
+                    -- Создаем функцию приведения типа
+                    CREATE OR REPLACE FUNCTION text_to_certificatestatus(text) RETURNS "certificatestatus" AS $FUNC$
+                    BEGIN
+                        RETURN $1::"certificatestatus";
+                    EXCEPTION
+                        WHEN invalid_text_representation THEN
+                            RETURN 'issued'::"certificatestatus";
+                    END;
+                    $FUNC$ LANGUAGE plpgsql IMMUTABLE;
+                    
+                    -- Создаем оператор приведения
+                    DROP CAST IF EXISTS (text AS "certificatestatus");
+                    CREATE CAST (text AS "certificatestatus") WITH FUNCTION text_to_certificatestatus(text) AS IMPLICIT;
+                END
+                $BODY$;
+            """))
+            await conn.commit()
+            logging.info("Created ENUM types and casting functions successfully")
+    except Exception as e:
+        logging.error(f"Error creating ENUM types: {e}")
+        raise
+
 async def init_db():
     """Initialize database."""
     try:
+        # Создаем все необходимые ENUM типы и функции приведения типов
+        await create_enum_types()
+        
         # Проверяем, существуют ли уже таблицы
         async with engine.connect() as conn:
             # Проверяем существование таблицы users как индикатор инициализации БД

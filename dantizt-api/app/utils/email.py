@@ -20,9 +20,10 @@ conf = ConnectionConfig(
     MAIL_PORT=settings.MAIL_PORT,
     MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
     TEMPLATE_FOLDER=template_dir
 )
 
@@ -78,8 +79,15 @@ async def send_test_email(
 
 async def send_verification_email_new(email: str, full_name: str, verification_url: str):
     """Отправляет email для подтверждения адреса электронной почты"""
+    import traceback
+    
+    logger.info(f"Attempting to send verification email to {email}")
+    logger.info(f"Email configuration: Server={settings.MAIL_SERVER}, Port={settings.MAIL_PORT}")
+    logger.info(f"Using credentials: Username={settings.MAIL_USERNAME}")
+    logger.info(f"Verification URL: {verification_url}")
     
     try:
+        logger.info("Creating message schema")
         message = MessageSchema(
             subject="Подтверждение email адреса - DantiZT",
             recipients=[email],
@@ -125,11 +133,24 @@ async def send_verification_email_new(email: str, full_name: str, verification_u
             subtype="html"
         )
         
-        await fastmail.send_message(message)
-        logger.info(f"Verification email sent to {email}")
+        logger.info("Message schema created, attempting to send email")
+        logger.info(f"FastMail configuration: {conf}")
+        
+        try:
+            await fastmail.send_message(message)
+            logger.info(f"Verification email successfully sent to {email}")
+            return True
+        except Exception as send_error:
+            logger.error(f"Error during send_message call: {str(send_error)}")
+            logger.error(f"Error type: {type(send_error).__name__}")
+            logger.error(f"Error details: {traceback.format_exc()}")
+            raise send_error
         
     except Exception as e:
         logger.error(f"Failed to send verification email to {email}: {str(e)}")
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception traceback: {traceback.format_exc()}")
+        logger.error(f"Email configuration details: MAIL_SERVER={settings.MAIL_SERVER}, MAIL_PORT={settings.MAIL_PORT}, MAIL_USERNAME={settings.MAIL_USERNAME}")
         raise
 
 async def send_tax_deduction_certificate(email: str, full_name: str, year: int, pdf_content: bytes):

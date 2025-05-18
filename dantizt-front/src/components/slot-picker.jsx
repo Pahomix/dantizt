@@ -46,7 +46,23 @@ export default function SlotPicker({ doctorId, selectedDate, onSlotSelect }) {
         const response = await fetchDoctorAvailability(doctorId, selectedDate);
         setSlots(response.slots || []);
       } catch (err) {
-        setError(err.message);
+        // Проверяем, является ли ошибка 404 (расписание не найдено)
+        if (err.response && err.response.status === 404) {
+          // Получаем день недели из выбранной даты (0 - воскресенье, 1 - понедельник, и т.д.)
+          const dayOfWeek = selectedDate.getDay();
+          const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу'];
+          
+          // Проверяем, содержит ли сообщение об ошибке информацию о дне недели
+          if (err.response.data && err.response.data.detail && 
+              err.response.data.detail.includes('No schedule found for doctor on day')) {
+            setError(`В ${dayNames[dayOfWeek]} врач не ведет прием. Пожалуйста, выберите другой день.`);
+          } else {
+            setError('Расписание не найдено для выбранного дня');
+          }
+        } else {
+          setError(err.message || 'Ошибка при загрузке доступного времени');
+        }
+        console.error('Ошибка при загрузке слотов:', err);
       } finally {
         setLoading(false);
       }
@@ -82,8 +98,44 @@ export default function SlotPicker({ doctorId, selectedDate, onSlotSelect }) {
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">
-        Ошибка при загрузке слотов: {error}
+      <div className="p-4 rounded-lg bg-red-50 border border-red-100">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">
+              Доступное время не найдено
+            </h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>{error}</p>
+            </div>
+            {error.includes('врач не ведет прием') && (
+              <div className="mt-3">
+                <div className="flex">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    onClick={() => {
+                      // Переходим на следующий день
+                      const nextDay = new Date(selectedDate);
+                      nextDay.setDate(nextDay.getDate() + 1);
+                      // Вызываем функцию изменения даты в родительском компоненте
+                      window.dispatchEvent(new CustomEvent('change-appointment-date', { detail: nextDay }));
+                    }}
+                  >
+                    <svg className="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                    Посмотреть следующий день
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }

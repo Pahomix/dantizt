@@ -28,11 +28,21 @@ export const useAuthStore = create(
           console.error('Logout error:', error);
         } finally {
           console.log('Clearing auth state');
+          // Определяем, находимся ли мы в режиме разработки
+          const isLocalhost = typeof window !== 'undefined' && 
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+          
+          console.log('Removing cookies in store, environment:', isLocalhost ? 'development (localhost)' : 'production');
+          
           // Очищаем куки при выходе с правильными параметрами
           const cookieOptions = {
-            path: '/',
-            domain: 'www.dantizt.ru'
+            path: '/'
           };
+          
+          // Добавляем домен только в продакшн режиме
+          if (!isLocalhost) {
+            cookieOptions.domain = 'www.dantizt.ru';
+          }
           
           Cookies.remove('access_token', cookieOptions);
           Cookies.remove('refresh_token', cookieOptions);

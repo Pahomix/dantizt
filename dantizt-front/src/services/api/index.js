@@ -1,4 +1,8 @@
 import api from '@/lib/axios';
+import { paymentsApi } from './payments';
+
+// Экспортируем сервис для работы с платежами
+export { paymentsApi };
 
 // Сервис для работы с пациентами
 export const patientsApi = {

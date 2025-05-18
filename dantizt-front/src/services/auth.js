@@ -13,17 +13,22 @@ export const login = async (credentials) => {
     
     console.log('Tokens from response:', { access_token, refresh_token });
     
-    // Используем HTTP в любом случае, так как работаем без SSL
-    const isProduction = false;
+    // Определяем, находимся ли мы в режиме разработки
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     
-    console.log('Setting cookies in environment:', isProduction ? 'production' : 'development');
+    console.log('Setting cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
     
     const cookieOptions = {
       secure: false, // Всегда false, так как используем HTTP
       sameSite: 'lax',
-      path: '/', // Важно указать path для доступности кук на всех страницах
-      domain: 'www.dantizt.ru' // Явно указываем домен
+      path: '/' // Важно указать path для доступности кук на всех страницах
     };
+    
+    // Добавляем домен только в продакшн режиме
+    if (!isLocalhost) {
+      cookieOptions.domain = 'www.dantizt.ru';
+    }
     
     if (access_token) {
       Cookies.set('access_token', access_token, cookieOptions);
@@ -71,11 +76,21 @@ export const verifyEmail = async (token) => {
 export const logout = async () => {
   const response = await api.post('/auth/logout');
   
+  // Определяем, находимся ли мы в режиме разработки
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  
+  console.log('Removing cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
+  
   // Удаляем куки при выходе, используя те же параметры, что и при установке
   const cookieOptions = {
-    path: '/',
-    domain: 'www.dantizt.ru'
+    path: '/'
   };
+  
+  // Добавляем домен только в продакшн режиме
+  if (!isLocalhost) {
+    cookieOptions.domain = 'www.dantizt.ru';
+  }
   
   Cookies.remove('access_token', cookieOptions);
   Cookies.remove('refresh_token', cookieOptions);

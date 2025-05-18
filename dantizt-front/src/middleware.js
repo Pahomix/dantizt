@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
 // Базовый URL для редиректов
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://www.dantizt.ru';
+const IS_DEV = process.env.NODE_ENV === 'development';
+const BASE_URL = IS_DEV ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://www.dantizt.ru');
 
 // Для отладки
 console.log('Middleware - Using BASE_URL:', BASE_URL);
@@ -19,17 +20,19 @@ export function middleware(request) {
   // Создаем URL для редиректов
   const url = new URL(request.url);
   
-  // Заменяем localhost на реальный домен, но сохраняем протокол
-  if (url.hostname === 'localhost') {
+  // В режиме разработки не заменяем localhost на реальный домен
+  if (!IS_DEV && url.hostname === 'localhost') {
     url.hostname = new URL(BASE_URL).hostname;
     // Не меняем протокол, чтобы не было принудительного перехода на HTTPS
     // url.protocol = new URL(BASE_URL).protocol;
   }
   
-  // Удаляем порт из URL, если он есть
-  if (url.port) {
+  // Удаляем порт из URL только в продакшн режиме
+  if (!IS_DEV && url.port) {
     url.port = '';
     console.log('Middleware - Removed port from URL:', url.toString());
+  } else if (IS_DEV && url.port) {
+    console.log('Middleware - Keeping port in dev mode:', url.toString());
   }
   
   const { pathname } = request.nextUrl;

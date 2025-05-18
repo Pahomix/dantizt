@@ -57,10 +57,10 @@ class Settings(BaseSettings):
 
     # Настройки почтового сервера
     MAIL_USERNAME: str = "pahomixmc@gmail.com"
-    MAIL_PASSWORD: str = "rjin tlsw botr flcw"
+    MAIL_PASSWORD: str = "kzyb ohqh vimh hxtz"
     MAIL_FROM: str = "pahomixmc@gmail.com"
     MAIL_FROM_NAME: str = "Dental Clinic"
-    MAIL_PORT: int = 587
+    MAIL_PORT: int = 465
     MAIL_SERVER: str = "smtp.gmail.com"
 
     AUTO_CREATE_TABLES: bool = True

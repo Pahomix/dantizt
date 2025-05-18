@@ -1309,7 +1309,7 @@ async def create_triggers(conn: AsyncConnection):
     await conn.execute(text("DROP TRIGGER IF EXISTS user_permissions_trigger ON users"))
     await conn.execute(text("""
         CREATE TRIGGER user_permissions_trigger
-        AFTER INSERT ON users
+        BEFORE INSERT OR UPDATE ON users
         FOR EACH ROW EXECUTE FUNCTION set_user_permissions()
     """))
 
@@ -1398,3 +1398,30 @@ async def create_triggers(conn: AsyncConnection):
         END
         $$;
     """))
+    
+    # Триггеры для логирования действий во всех основных таблицах
+    tables = [
+        'users', 'doctors', 'patients', 'appointments', 'medical_records',
+        'services', 'specializations', 'payments', 'doctor_schedules',
+        'doctor_reviews', 'doctor_specializations', 'notifications',
+        'treatments', 'treatment_steps', 'treatment_plans'
+    ]
+    
+    for table in tables:
+        # Проверяем существование таблицы перед созданием триггера
+        await conn.execute(text(f"""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = '{table}'
+                ) THEN
+                    DROP TRIGGER IF EXISTS audit_trigger ON {table};
+                    CREATE TRIGGER audit_trigger
+                    AFTER INSERT OR UPDATE OR DELETE ON {table}
+                    FOR EACH ROW EXECUTE FUNCTION log_changes();
+                END IF;
+            END
+            $$;
+        """))

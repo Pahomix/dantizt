@@ -485,8 +485,17 @@ async def delete_doctor(
             detail="Doctor not found"
         )
     
-    # Удаляем врача и связанного пользователя
-    await db.delete(doctor.user)
+    # Сохраняем ссылку на пользователя, если он есть
+    user = doctor.user
+    
+    # Сначала удаляем запись доктора
+    await db.delete(doctor)
+    await db.flush()
+    
+    # Затем удаляем пользователя, если он существует
+    if user:
+        await db.delete(user)
+    
     await db.commit()
     
     return None

@@ -19,6 +19,8 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   BellIcon,
+  DocumentDuplicateIcon,
+  ClipboardIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -31,8 +33,10 @@ const navigation = [
   { name: 'Услуги', href: '/admin/services', icon: BanknotesIcon },
   { name: 'Специализации', href: '/admin/specializations', icon: ClipboardDocumentListIcon },
   { name: 'Платежи', href: '/admin/payments', icon: CurrencyDollarIcon },
-  { name: 'Отзывы', href: '/admin/reviews', icon: HeartIcon },
+  // { name: 'Отзывы', href: '/admin/reviews', icon: HeartIcon },
   { name: 'Пользователи', href: '/admin/users', icon: UsersIcon },
+  { name: 'Журнал действий', href: '/admin/logs', icon: ClipboardIcon },
+  { name: 'Резервные копии', href: '/admin/backups', icon: DocumentDuplicateIcon },
 ];
 
 function classNames(...classes) {

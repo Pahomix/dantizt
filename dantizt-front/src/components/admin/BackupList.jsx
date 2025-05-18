@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useBackupStore } from '@/store/backupStore';
 
 export default function BackupList() {
-  const { backups, fetchBackups, createBackup, restoreBackup, deleteBackup, loading } = useBackupStore();
+  const { backups, fetchBackups, createBackup, restoreBackup, downloadBackup, deleteBackup, loading } = useBackupStore();
 
   useEffect(() => {
     fetchBackups();
@@ -12,15 +12,19 @@ export default function BackupList() {
     await createBackup();
   };
 
-  const handleRestoreBackup = async (backupId) => {
+  const handleRestoreBackup = async (filename) => {
     if (confirm('Вы уверены, что хотите восстановить базу данных из этой резервной копии? Все текущие данные будут заменены.')) {
-      await restoreBackup(backupId);
+      await restoreBackup(filename);
     }
   };
 
-  const handleDeleteBackup = async (backupId) => {
+  const handleDownloadBackup = async (filename) => {
+    await downloadBackup(filename);
+  };
+
+  const handleDeleteBackup = async (filename) => {
     if (confirm('Вы уверены, что хотите удалить эту резервную копию?')) {
-      await deleteBackup(backupId);
+      await deleteBackup(filename);
     }
   };
 
@@ -77,7 +81,7 @@ export default function BackupList() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {backups.map((backup) => (
-                <tr key={backup.id}>
+                <tr key={backup.filename}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {backup.filename}
                   </td>
@@ -85,19 +89,26 @@ export default function BackupList() {
                     {formatDate(backup.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {Math.round(backup.size / 1024)} КБ
+                    {backup.size_human || Math.round(backup.size_bytes / (1024*1024)) + ' MB'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
                     <button
-                      onClick={() => handleRestoreBackup(backup.id)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      onClick={() => handleDownloadBackup(backup.filename)}
+                      className="text-blue-600 hover:text-blue-900 px-2 py-1 border border-blue-600 rounded"
+                      disabled={loading}
+                    >
+                      Скачать
+                    </button>
+                    <button
+                      onClick={() => handleRestoreBackup(backup.filename)}
+                      className="text-indigo-600 hover:text-indigo-900 px-2 py-1 border border-indigo-600 rounded"
                       disabled={loading}
                     >
                       Восстановить
                     </button>
                     <button
-                      onClick={() => handleDeleteBackup(backup.id)}
-                      className="text-red-600 hover:text-red-900"
+                      onClick={() => handleDeleteBackup(backup.filename)}
+                      className="text-red-600 hover:text-red-900 px-2 py-1 border border-red-600 rounded"
                       disabled={loading}
                     >
                       Удалить

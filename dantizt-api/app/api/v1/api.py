@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     users, doctors, patients, appointments, 
     services, medical_records, payments, notifications,
-    certificates, auth as endpoints_auth, specializations, statistics, schedules
+    certificates, auth as endpoints_auth, specializations, statistics, schedules,
+    payment_status, logs, backups
 )
 from app.api.v1 import auth
 
@@ -21,3 +22,6 @@ api_router.include_router(certificates.router, prefix="/certificates", tags=["ce
 api_router.include_router(specializations.router, prefix="/specializations", tags=["specializations"])
 api_router.include_router(statistics.router, prefix="/statistics", tags=["statistics"])
 api_router.include_router(schedules.router, prefix="/schedules", tags=["schedules"])
+api_router.include_router(payment_status.router, prefix="/payment-status", tags=["payments"])
+api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
+api_router.include_router(backups.router, prefix="/backups", tags=["backups"])

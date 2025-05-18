@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, get_db
-from app.db.models import User, Specialization
+from app.core.security import get_current_user
+from app.db.session import get_db
+from app.db.models import User, Specialization, UserRole
 from app.schemas.specialization import SpecializationCreate, SpecializationUpdate, SpecializationInDB
 
 router = APIRouter()
@@ -20,11 +21,13 @@ async def get_specializations(
 @router.post("/", response_model=SpecializationInDB)
 async def create_specialization(
     specialization: SpecializationCreate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Создать новую специализацию (только для администраторов)"""
-    if not current_user.is_superuser:
+    # Проверяем роль пользователя
+    if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only administrators can create specializations"
@@ -59,11 +62,13 @@ async def get_specialization(
 async def update_specialization(
     specialization_id: int,
     specialization_update: SpecializationUpdate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Обновить информацию о специализации (только для администраторов)"""
-    if not current_user.is_superuser:
+    # Проверяем роль пользователя
+    if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only administrators can update specializations"
@@ -90,16 +95,19 @@ async def update_specialization(
 @router.delete("/{specialization_id}")
 async def delete_specialization(
     specialization_id: int,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Удалить специализацию (только для администраторов)"""
-    if not current_user.is_superuser:
+    # Проверяем роль пользователя
+    if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only administrators can delete specializations"
         )
     
+    # Проверяем существование специализации
     result = await db.execute(
         select(Specialization).where(Specialization.id == specialization_id)
     )
@@ -111,6 +119,12 @@ async def delete_specialization(
             detail="Specialization not found"
         )
     
+    # Находим всех врачей с этой специализацией и устанавливаем specialization_id в NULL
+    # Это сработает благодаря изменению модели Doctor и установке ondelete="SET NULL"
+    # в ForeignKey для specialization_id
+    
+    # Удаляем специализацию
     await db.delete(specialization)
     await db.commit()
+    
     return {"message": "Specialization deleted successfully"}

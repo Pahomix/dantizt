@@ -23,7 +23,7 @@ const navigation = [
   { name: 'Записи на прием', href: '/reception/appointments', icon: CalendarIcon },
   { name: 'Платежи', href: '/reception/payments', icon: CurrencyDollarIcon },
   { name: 'Справки', href: '/reception/documents', icon: DocumentCheckIcon },
-  { name: 'Расписание врачей', href: '/reception/schedules', icon: ClockIcon },
+  // { name: 'Расписание врачей', href: '/reception/schedules', icon: ClockIcon },
 ];
 
 function classNames(...classes) {

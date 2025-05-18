@@ -9,8 +9,8 @@ export const useBackupStore = create((set, get) => ({
   fetchBackups: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await api.get('/admin/backups');
-      set({ backups: response.data, loading: false });
+      const response = await api.get('/backups');
+      set({ backups: response.data.items || [], loading: false });
     } catch (error) {
       console.error('Ошибка при загрузке резервных копий:', error);
       set({ 
@@ -23,7 +23,7 @@ export const useBackupStore = create((set, get) => ({
   createBackup: async () => {
     try {
       set({ loading: true, error: null });
-      await api.post('/admin/backups');
+      await api.post('/backups/create');
       // После создания обновляем список
       await get().fetchBackups();
     } catch (error) {
@@ -35,10 +35,10 @@ export const useBackupStore = create((set, get) => ({
     }
   },
 
-  restoreBackup: async (backupId) => {
+  restoreBackup: async (filename) => {
     try {
       set({ loading: true, error: null });
-      await api.post(`/admin/backups/${backupId}/restore`);
+      await api.post(`/backups/restore/${filename}`);
       set({ loading: false });
       return true;
     } catch (error) {
@@ -50,11 +50,33 @@ export const useBackupStore = create((set, get) => ({
       return false;
     }
   },
-
-  deleteBackup: async (backupId) => {
+  
+  downloadBackup: async (filename) => {
     try {
       set({ loading: true, error: null });
-      await api.delete(`/admin/backups/${backupId}`);
+      // Создаем ссылку для скачивания файла
+      const response = await api.get(`/backups/download/${filename}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      set({ loading: false });
+    } catch (error) {
+      console.error('Ошибка при скачивании резервной копии:', error);
+      set({ 
+        error: error.response?.data?.detail || 'Не удалось скачать резервную копию', 
+        loading: false 
+      });
+    }
+  },
+
+  deleteBackup: async (filename) => {
+    try {
+      set({ loading: true, error: null });
+      await api.delete(`/backups/${filename}`);
       // После удаления обновляем список
       await get().fetchBackups();
     } catch (error) {

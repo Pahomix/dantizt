@@ -3,7 +3,7 @@ from typing import Optional
 from app.schemas.user import UserOut
 
 class DoctorBase(BaseModel):
-    specialization_id: int 
+    specialization_id: Optional[int] = None
     experience_years: Optional[int] = Field(default=0)  # Разрешаем None
     education: Optional[str] = None
     bio: Optional[str] = None
@@ -35,7 +35,7 @@ class DoctorUpdateBase(BaseModel):
     email: str
     full_name: str
     phone_number: Optional[str]
-    specialization_id: int
+    specialization_id: Optional[int] = None
     experience_years: Optional[int] = None  # Разрешаем None
     education: Optional[str]
     bio: Optional[str] = None
@@ -54,7 +54,7 @@ class DoctorProfileUpdate(BaseModel):
     email: str
     full_name: str
     phone_number: Optional[str] = None
-    specialization_id: int
+    specialization_id: Optional[int] = None
     experience_years: Optional[int] = None
     education: Optional[str] = None
     bio: Optional[str] = None
@@ -74,7 +74,7 @@ class DoctorInDB(DoctorBase):
     id: int
     user_id: int
     full_name: str
-    specialization: SpecializationInfo
+    specialization: Optional[SpecializationInfo] = None
 
     class Config:
         from_attributes = True
@@ -84,15 +84,27 @@ class DoctorInDB(DoctorBase):
         if not doctor:
             raise ValueError("Doctor object is required")
             
+        # Создаем объект специализации только если она существует
+        specialization = None
+        if doctor.specialization_id is not None and doctor.specialization is not None:
+            specialization = SpecializationInfo(
+                id=doctor.specialization_id,
+                name=doctor.specialization.name,
+                appointment_duration=doctor.specialization.appointment_duration
+            )
+        elif doctor.specialization_id is not None:
+            # Есть ID, но нет объекта специализации
+            specialization = SpecializationInfo(
+                id=doctor.specialization_id,
+                name='Без специализации',
+                appointment_duration=30
+            )
+        
         return cls(
             id=doctor.id,
             user_id=doctor.user_id,
             full_name=doctor.user.full_name if doctor.user else 'Без имени',
-            specialization=SpecializationInfo(
-                id=doctor.specialization_id, 
-                name=doctor.specialization.name if doctor.specialization else 'Без специализации',
-                appointment_duration=doctor.specialization.appointment_duration if doctor.specialization else 30
-            ),
+            specialization=specialization,
             specialization_id=doctor.specialization_id,
             experience_years=doctor.experience_years,  # Будет преобразовано в 0 если None
             education=doctor.education,
@@ -102,7 +114,7 @@ class DoctorInDB(DoctorBase):
 class DoctorWithUser(DoctorBase):
     id: int
     user: UserOut
-    specialization: SpecializationInfo
+    specialization: Optional[SpecializationInfo] = None
 
     class Config:
         from_attributes = True
@@ -115,14 +127,26 @@ class DoctorWithUser(DoctorBase):
         if not doctor.user:
             raise ValueError("Doctor must have associated user")
 
+        # Создаем объект специализации только если она существует
+        specialization = None
+        if doctor.specialization_id is not None and doctor.specialization is not None:
+            specialization = SpecializationInfo(
+                id=doctor.specialization_id,
+                name=doctor.specialization.name,
+                appointment_duration=doctor.specialization.appointment_duration
+            )
+        elif doctor.specialization_id is not None:
+            # Есть ID, но нет объекта специализации
+            specialization = SpecializationInfo(
+                id=doctor.specialization_id,
+                name='Без специализации',
+                appointment_duration=30
+            )
+
         return cls(
             id=doctor.id,
             user=UserOut.from_orm(doctor.user),
-            specialization=SpecializationInfo(
-                id=doctor.specialization_id, 
-                name=doctor.specialization.name if doctor.specialization else 'Без специализации',
-                appointment_duration=doctor.specialization.appointment_duration if doctor.specialization else 30
-            ),
+            specialization=specialization,
             specialization_id=doctor.specialization_id,
             experience_years=doctor.experience_years,  # Будет преобразовано в 0 если None
             education=doctor.education,

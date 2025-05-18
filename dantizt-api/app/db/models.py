@@ -119,7 +119,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
-    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.patient)
+    role = Column(String, nullable=False, default=UserRole.patient.value)
     email_verified = Column(Boolean(), default=False)
     email_verification_token = Column(String, unique=True, nullable=True)
     email_verification_token_expires = Column(DateTime(timezone=True), nullable=True)
@@ -152,7 +152,7 @@ class Doctor(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
-    specialization_id = Column(Integer, ForeignKey("specializations.id"), nullable=False)
+    specialization_id = Column(Integer, ForeignKey("specializations.id", ondelete="SET NULL"), nullable=True)
     experience_years = Column(Integer, default=0)
     education = Column(String)
     certifications = Column(ARRAY(String), default=list)

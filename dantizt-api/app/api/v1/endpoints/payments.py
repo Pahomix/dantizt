@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status as http_status, Request, Response
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -865,6 +866,62 @@ async def check_tinkoff_payment_status(
             detail=f"Error checking payment status: {str(e)}"
         )
 
+@router.get("/check-status/{payment_id}")
+async def manual_check_payment_status(
+    payment_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Ручная проверка статуса платежа через API Тинькофф (GetState)
+    
+    Этот эндпоинт позволяет проверить статус платежа без авторизации.
+    Может использоваться клиентом для периодической проверки статуса платежа,
+    если уведомления от Тинькофф не приходят.
+    """
+    try:
+        # Получаем платеж из БД
+        query = select(Payment).where(Payment.id == payment_id)
+        result = await db.execute(query)
+        payment = result.scalar_one_or_none()
+        
+        if not payment:
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND,
+                detail="Payment not found"
+            )
+            
+        # Если у платежа нет external_payment_id, значит он еще не был инициализирован в Тинькофф
+        if not payment.external_payment_id:
+            return {
+                "success": True,
+                "payment_id": payment_id,
+                "status": payment.status,
+                "message": "Payment not initialized in Tinkoff yet"
+            }
+            
+        # Проверяем статус платежа через API Тинькофф
+        response = await payment_service.check_payment_status(
+            payment_id=payment_id,
+            tinkoff_payment_id=payment.external_payment_id,
+            db=db
+        )
+        
+        # Добавляем информацию о статусе платежа в системе
+        response["system_status"] = payment.status
+        
+        return response
+    except ValueError as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error checking payment status: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error checking payment status: {str(e)}"
+        )
+
 @router.post("/tinkoff/confirm")
 async def confirm_tinkoff_payment(
     payment_data: TinkoffPaymentConfirmRequest,
@@ -1016,6 +1073,14 @@ async def process_tinkoff_notification(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    # Самое первое логирование, до любых блоков try-except
+    logger.info("!!! TINKOFF NOTIFICATION RECEIVED - INITIAL LOG !!!")
+    logger.info(f"!!! Request from IP: {request.client.host if request.client else 'Unknown'} !!!")
+    logger.info(f"!!! Request method: {request.method} !!!")
+    logger.info(f"!!! Request URL: {request.url} !!!")
+    logger.info(f"!!! Headers: {dict(request.headers)} !!!")
+    logger.info("!!! END OF INITIAL LOG !!!")
+    
     """Обработка уведомления от API Тинькофф"""
     try:
         # Расширенное логирование входящего запроса
@@ -1065,7 +1130,8 @@ async def process_tinkoff_notification(
         # Проверяем наличие необходимых полей
         if not notification_data:
             logger.error("Empty notification data received")
-            return {"success": False, "message": "Empty notification data"}
+            # Даже при ошибке возвращаем OK для Тинькофф
+            return PlainTextResponse(content="OK", status_code=200)
         
         # Проверяем наличие ключевых полей для Tinkoff
         expected_keys = ['OrderId', 'PaymentId', 'Status', 'Success']
@@ -1096,13 +1162,15 @@ async def process_tinkoff_notification(
         if result.get("success"):
             logger.info("Successfully processed Tinkoff notification")
             logger.info("=== TINKOFF NOTIFICATION ENDPOINT COMPLETE ===\n")
-            return {"success": True}
         else:
             logger.warning(f"Failed to process Tinkoff notification: {result.get('message')}")
             logger.info("=== TINKOFF NOTIFICATION ENDPOINT COMPLETE WITH ERRORS ===\n")
-            return {"success": False, "message": result.get("message")}
+        
+        # Возвращаем ответ в формате, который ожидает Тинькофф
+        return PlainTextResponse(content="OK", status_code=200)
     except Exception as e:
         logger.error(f"Error processing Tinkoff notification: {str(e)}")
-        logger.exception("Full exception details:")
-        logger.info("=== TINKOFF NOTIFICATION ENDPOINT COMPLETE WITH EXCEPTION ===\n")
-        return {"success": False, "message": f"Error processing notification: {str(e)}"}
+        logger.error(traceback.format_exc())
+        logger.info("=== TINKOFF NOTIFICATION ENDPOINT FAILED ===\n")
+        # Даже при ошибке возвращаем OK для Тинькофф
+        return PlainTextResponse(content="OK", status_code=200)

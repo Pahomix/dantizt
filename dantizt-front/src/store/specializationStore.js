@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import axios from '@/lib/axios';
+import api from '@/lib/axios';
 import { showError } from '@/utils/notifications';
 
 export const useSpecializationStore = create((set, get) => ({
@@ -11,7 +11,7 @@ export const useSpecializationStore = create((set, get) => ({
   fetchSpecializations: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get('/specializations');
+      const response = await api.get('/specializations');
       set({ specializations: response.data });
     } catch (error) {
       set({ error: error.message });
@@ -25,7 +25,7 @@ export const useSpecializationStore = create((set, get) => ({
   createSpecialization: async (specializationData) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.post('/specializations', specializationData);
+      const response = await api.post('/specializations', specializationData);
       set(state => ({
         specializations: [...state.specializations, response.data]
       }));
@@ -42,7 +42,7 @@ export const useSpecializationStore = create((set, get) => ({
   updateSpecialization: async (specializationId, specializationData) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.put(`/specializations/${specializationId}`, specializationData);
+      const response = await api.put(`/specializations/${specializationId}`, specializationData);
       set(state => ({
         specializations: state.specializations.map(specialization =>
           specialization.id === specializationId ? response.data : specialization
@@ -61,7 +61,7 @@ export const useSpecializationStore = create((set, get) => ({
   deleteSpecialization: async (specializationId) => {
     set({ loading: true, error: null });
     try {
-      await axios.delete(`/specializations/${specializationId}`);
+      await api.delete(`/specializations/${specializationId}`);
       set(state => ({
         specializations: state.specializations.filter(specialization => specialization.id !== specializationId)
       }));

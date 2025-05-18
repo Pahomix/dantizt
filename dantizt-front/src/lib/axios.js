@@ -1,8 +1,18 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Определяем URL API в зависимости от окружения
+const IS_DEV = process.env.NODE_ENV === 'development';
+const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'http://www.dantizt.ru/api/v1';
+const API_URL_DEV = process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:8000/api/v1';
+
+// Используем продакшн URL или URL для разработки
+const API_URL = IS_DEV ? API_URL_DEV : API_URL_PROD;
+
+console.log('[API] Using API URL:', API_URL);
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -3,28 +3,28 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet } from 'react-native';
-import { colors } from './src/utils/colors';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { colors } from '../dantizt-mobile-new/src/utils/colors';
+import { MaterialIcons, preloadIcons } from './vectorIconsHelper';
 import React from 'react';
 import { Alert } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 
 // Auth Screens
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import RegisterSuccessScreen from './src/screens/RegisterSuccessScreen';
+import LoginScreen from '../dantizt-mobile-new/src/screens/LoginScreen';
+import RegisterScreen from '../dantizt-mobile-new/src/screens/RegisterScreen';
+import RegisterSuccessScreen from '../dantizt-mobile-new/src/screens/RegisterSuccessScreen';
 
 // Patient Screens
-import ProfileScreen from './src/screens/patient/ProfileScreen';
-import AppointmentsScreen from './src/screens/patient/AppointmentsScreen';
-import MedicalRecordsScreen from './src/screens/patient/MedicalRecordsScreen';
-import CreateAppointmentScreen from './src/screens/patient/CreateAppointmentScreen';
-import PaymentsScreen from './src/screens/patient/PaymentsScreen';
+import ProfileScreen from '../dantizt-mobile-new/src/screens/patient/ProfileScreen';
+import AppointmentsScreen from '../dantizt-mobile-new/src/screens/patient/AppointmentsScreen';
+import MedicalRecordsScreen from '../dantizt-mobile-new/src/screens/patient/MedicalRecordsScreen';
+import CreateAppointmentScreen from '../dantizt-mobile-new/src/screens/patient/CreateAppointmentScreen';
+import PaymentsScreen from '../dantizt-mobile-new/src/screens/patient/PaymentsScreen';
 
 // Components
-import PatientTabBar from './src/components/PatientTabBar';
+import PatientTabBar from '../dantizt-mobile-new/src/components/PatientTabBar';
 
-import useAuthStore from './src/store/authStore';
+import useAuthStore from '../dantizt-mobile-new/src/store/authStore';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -183,8 +183,11 @@ export default function App() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const checkAuth = useAuthStore(state => state.checkAuth);
 
-  // Проверяем авторизацию при запуске приложения
+  // Предзагружаем иконки и проверяем авторизацию при запуске приложения
   React.useEffect(() => {
+    // Предзагрузка иконок
+    preloadIcons();
+    // Проверка авторизации
     checkAuth();
   }, []);
 

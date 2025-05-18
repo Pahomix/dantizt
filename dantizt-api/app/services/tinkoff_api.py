@@ -20,62 +20,59 @@ class TinkoffAPI:
         """Генерация токена для запроса по документации Тинькофф"""
         # Копируем параметры
         params_copy = params.copy()
-        logger.debug(f"Initial params: {json.dumps(params_copy, ensure_ascii=False)}")
+        logger.debug(f"Initial params for {endpoint}: {json.dumps(params_copy, ensure_ascii=False)}")
         
-        # Определяем поля, которые должны участвовать в генерации токена для каждого метода
-        required_fields = {
-            'Init': {'Amount', 'OrderId', 'TerminalKey'},
-            'GetState': {'PaymentId', 'TerminalKey'},
-            'Confirm': {'PaymentId', 'TerminalKey'},
-            'Cancel': {'PaymentId', 'TerminalKey'},
-            'Refund': {'PaymentId', 'TerminalKey'},
-        }
+        # Создаем словарь для параметров токена
+        token_params = {}
         
-        # Если метод не указан или не найден в списке, используем все поля кроме исключенных
-        if not endpoint or endpoint not in required_fields:
-            excluded_fields = {
-                'Token', 'Receipt', 'DATA', 'Shops', 'SuccessURL', 'FailURL', 
-                'NotificationURL', 'Description'
-            }
-            # Удаляем исключенные поля и None значения
-            token_params = {}
-            for key, value in params_copy.items():
-                if key not in excluded_fields and value not in [None, '']:
-                    # Преобразуем все значения в строки
-                    if isinstance(value, bool):
-                        token_params[key] = "1" if value else "0"
-                    else:
-                        token_params[key] = str(value)
+        # Исключаем поля, которые не должны участвовать в формировании токена
+        excluded_fields = ['Token', 'Receipt', 'DATA', 'TestMode']
+        
+        # Для метода Init используем только необходимые параметры
+        if endpoint == 'Init':
+            # Добавляем только необходимые параметры
+            required_fields = ['TerminalKey', 'Amount', 'OrderId', 'Description', 'SuccessURL', 'FailURL', 'NotificationURL']
+            
+            for key in required_fields:
+                if key in params_copy and params_copy[key] is not None and params_copy[key] != '':
+                    token_params[key] = str(params_copy[key])
         else:
-            # Используем только требуемые поля для данного метода
-            token_params = {}
-            for key in required_fields[endpoint]:
-                if key in params_copy and params_copy[key] not in [None, '']:
-                    value = params_copy[key]
+            # Для других методов добавляем все параметры, кроме исключенных
+            for key, value in params_copy.items():
+                if key not in excluded_fields and value is not None and value != '':
                     if isinstance(value, bool):
                         token_params[key] = "1" if value else "0"
                     else:
                         token_params[key] = str(value)
-                
+        
         # Добавляем пароль
         token_params['Password'] = self.password
         
-        logger.debug(f"Params for token: {json.dumps(token_params, ensure_ascii=False)}")
+        logger.debug(f"Token parameters for {endpoint}: {json.dumps(token_params, ensure_ascii=False)}")
         
-        # Начинаем строку с пароля
-        values = [self.password]
+        # Сортируем ключи в алфавитном порядке
+        sorted_keys = sorted(token_params.keys())
         
-        # Добавляем остальные значения в отсортированном порядке
-        for key in sorted(token_params.keys()):
-            if key != 'Password':  # Пропускаем Password, так как мы уже добавили его
-                values.append(token_params[key])
-            
-        values_str = ''.join(values)
-        logger.debug(f"Values string for hashing: {values_str}")
+        # Конкатенируем значения всех пар
+        concatenated = ''
+        for key in sorted_keys:
+            concatenated += str(token_params[key])
         
-        # Генерируем токен
-        token = hashlib.sha256(values_str.encode('utf-8')).hexdigest()
-        logger.debug(f"Generated token: {token}")
+        logger.debug(f"Concatenated string for hashing: {concatenated}")
+        
+        # Вычисляем хэш SHA-256
+        token = hashlib.sha256(concatenated.encode('utf-8')).hexdigest()
+        logger.debug(f"Generated token for {endpoint}: {token}")
+        
+        # Для отладки метода Init
+        if endpoint == 'Init':
+            logger.debug("\nFor testing on https://tokentcs.web.app/")
+            logger.debug("Parameters:")
+            for key in sorted_keys:
+                if key != 'Password':
+                    logger.debug(f"{key}: {token_params[key]}")
+            logger.debug(f"Password: {token_params['Password']}")
+        
         return token
 
     async def _make_request(self, endpoint: str, params: dict) -> dict:
@@ -91,17 +88,34 @@ class TinkoffAPI:
         params["Token"] = self._generate_token(params, endpoint=endpoint)
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                logger.info(f"Tinkoff API request ({endpoint}): {json.dumps(params, ensure_ascii=False)}")
                 response = await client.post(
                     f"{self.base_url}{endpoint}",
                     json=params
                 )
+                
+                # Проверяем HTTP-статус
+                response.raise_for_status()
+                
                 response_data = response.json()
-                logger.info(f"Tinkoff API request ({endpoint}): {json.dumps(params, ensure_ascii=False)}")
                 logger.info(f"Tinkoff API response ({endpoint}): {json.dumps(response_data, ensure_ascii=False)}")
+                
+                # Проверяем статус ответа от API
+                if not response_data.get("Success", False):
+                    error_code = response_data.get("ErrorCode", "unknown")
+                    error_message = response_data.get("Message", "Unknown error")
+                    logger.error(f"Tinkoff API error: {error_code} - {error_message}")
+                
                 return response_data
-        except Exception as e:
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Tinkoff API HTTP error: {e.response.status_code} - {str(e)}")
+            raise
+        except httpx.RequestError as e:
             logger.error(f"Tinkoff API request error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Tinkoff API unexpected error: {str(e)}")
             raise
 
     async def init_payment(
