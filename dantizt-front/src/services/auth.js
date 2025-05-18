@@ -19,16 +19,29 @@ export const login = async (credentials) => {
     
     console.log('Setting cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
     
-    const cookieOptions = {
-      secure: !isLocalhost, // Используем secure в продакшне
-      sameSite: 'lax',
-      path: '/', // Важно указать path для доступности кук на всех страницах
-      expires: 7 // Срок действия куки - 7 дней
-    };
+    // Для продакшна и разработки используем разные настройки
+    let cookieOptions = {};
     
-    // Добавляем домен только в продакшн режиме
-    if (!isLocalhost) {
-      // Удаляем www из домена, чтобы куки работали на всех субдоменах
+    if (isLocalhost) {
+      // Настройки для локальной разработки
+      cookieOptions = {
+        path: '/',
+        expires: 7,
+        sameSite: 'lax',
+        secure: false
+      };
+    } else {
+      // Настройки для продакшна
+      cookieOptions = {
+        path: '/',
+        expires: 7,
+        // Для HTTP сайта не можем использовать secure
+        secure: false,
+        // Используем None вместо Lax для лучшей совместимости
+        sameSite: 'none'
+      };
+      
+      // Используем корневой домен без www
       cookieOptions.domain = 'dantizt.ru';
     }
     
@@ -85,15 +98,27 @@ export const logout = async () => {
   console.log('Removing cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
   
   // Удаляем куки при выходе, используя те же параметры, что и при установке
-  const cookieOptions = {
-    secure: !isLocalhost,
-    sameSite: 'lax',
-    path: '/'
-  };
+  // Для продакшна и разработки используем разные настройки
+  let cookieOptions = {};
   
-  // Добавляем домен только в продакшн режиме
-  if (!isLocalhost) {
-    // Удаляем www из домена, чтобы куки работали на всех субдоменах
+  if (isLocalhost) {
+    // Настройки для локальной разработки
+    cookieOptions = {
+      path: '/',
+      sameSite: 'lax',
+      secure: false
+    };
+  } else {
+    // Настройки для продакшна
+    cookieOptions = {
+      path: '/',
+      // Для HTTP сайта не можем использовать secure
+      secure: false,
+      // Используем None вместо Lax для лучшей совместимости
+      sameSite: 'none'
+    };
+    
+    // Используем корневой домен без www
     cookieOptions.domain = 'dantizt.ru';
   }
   

@@ -44,11 +44,27 @@ export default function Login() {
       const redirectPath = HOME_ROUTES[response.data.role] || '/dashboard';
       console.log('Login successful, redirecting to:', redirectPath);
       
+      // Добавляем уведомление об успешном входе
+      toast.success('Вы успешно вошли в систему. Перенаправляем вас...');
+      
+      // Проверяем, что куки установлены
+      console.log('Cookies after login:', {
+        access_token: Cookies.get('access_token'),
+        refresh_token: Cookies.get('refresh_token'),
+        userRole: Cookies.get('userRole')
+      });
+      
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
       setTimeout(() => {
+        // Еще раз проверяем куки перед перенаправлением
+        console.log('Cookies before redirect:', {
+          access_token: Cookies.get('access_token'),
+          refresh_token: Cookies.get('refresh_token'),
+          userRole: Cookies.get('userRole')
+        });
         window.location.href = redirectPath;
-      }, 500); // Небольшая задержка, чтобы убедиться, что куки успели установиться
+      }, 2000); // Увеличиваем задержку до 2 секунд, чтобы убедиться, что куки успели установиться
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.detail || 'Ошибка при входе';
