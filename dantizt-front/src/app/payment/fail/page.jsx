@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePaymentsStore } from '@/store/paymentsStore';
 import { toast } from 'react-toastify';
 import PaymentStatusChecker from '@/components/payment/PaymentStatusChecker';
 
-export default function PaymentFailPage() {
+function PaymentFailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { fetchPatientPayments } = usePaymentsStore();
@@ -104,5 +104,13 @@ export default function PaymentFailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">Загрузка...</div>}>
+      <PaymentFailContent />
+    </Suspense>
   );
 }
