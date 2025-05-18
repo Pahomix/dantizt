@@ -58,17 +58,50 @@ api.interceptors.response.use(
         const response = await api.post('/auth/refresh');
         const { access_token } = response.data;
         
-        // Сохраняем новый токен
-        Cookies.set('access_token', access_token);
+        // Сохраняем новый токен с правильными настройками
+        // Определяем, находимся ли мы в режиме разработки
+        const isLocalhost = typeof window !== 'undefined' && 
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        
+        const cookieOptions = {
+          secure: !isLocalhost,
+          sameSite: 'lax',
+          path: '/',
+          expires: 7 // Срок действия куки - 7 дней
+        };
+        
+        // Добавляем домен только в продакшн режиме
+        if (!isLocalhost) {
+          // Удаляем www из домена, чтобы куки работали на всех субдоменах
+          cookieOptions.domain = 'dantizt.ru';
+        }
+        
+        Cookies.set('access_token', access_token, cookieOptions);
         
         // Повторяем оригинальный запрос с новым токеном
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return api(originalRequest);
       } catch (refreshError) {
         // Если не удалось обновить токен, выходим из системы
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
-        Cookies.remove('userRole');
+        // Определяем, находимся ли мы в режиме разработки
+        const isLocalhost = typeof window !== 'undefined' && 
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        
+        const cookieOptions = {
+          secure: !isLocalhost,
+          sameSite: 'lax',
+          path: '/'
+        };
+        
+        // Добавляем домен только в продакшн режиме
+        if (!isLocalhost) {
+          // Удаляем www из домена, чтобы куки работали на всех субдоменах
+          cookieOptions.domain = 'dantizt.ru';
+        }
+        
+        Cookies.remove('access_token', cookieOptions);
+        Cookies.remove('refresh_token', cookieOptions);
+        Cookies.remove('userRole', cookieOptions);
         window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       }

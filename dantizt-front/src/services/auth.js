@@ -20,14 +20,16 @@ export const login = async (credentials) => {
     console.log('Setting cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
     
     const cookieOptions = {
-      secure: false, // Всегда false, так как используем HTTP
+      secure: !isLocalhost, // Используем secure в продакшне
       sameSite: 'lax',
-      path: '/' // Важно указать path для доступности кук на всех страницах
+      path: '/', // Важно указать path для доступности кук на всех страницах
+      expires: 7 // Срок действия куки - 7 дней
     };
     
     // Добавляем домен только в продакшн режиме
     if (!isLocalhost) {
-      cookieOptions.domain = 'www.dantizt.ru';
+      // Удаляем www из домена, чтобы куки работали на всех субдоменах
+      cookieOptions.domain = 'dantizt.ru';
     }
     
     if (access_token) {
@@ -84,12 +86,15 @@ export const logout = async () => {
   
   // Удаляем куки при выходе, используя те же параметры, что и при установке
   const cookieOptions = {
+    secure: !isLocalhost,
+    sameSite: 'lax',
     path: '/'
   };
   
   // Добавляем домен только в продакшн режиме
   if (!isLocalhost) {
-    cookieOptions.domain = 'www.dantizt.ru';
+    // Удаляем www из домена, чтобы куки работали на всех субдоменах
+    cookieOptions.domain = 'dantizt.ru';
   }
   
   Cookies.remove('access_token', cookieOptions);
