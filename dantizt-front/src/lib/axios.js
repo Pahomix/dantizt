@@ -85,8 +85,8 @@ api.interceptors.response.use(
             sameSite: 'none'
           };
           
-          // Используем корневой домен без www
-          cookieOptions.domain = 'dantizt.ru';
+          // Используем точный домен сайта
+          cookieOptions.domain = 'www.dantizt.ru';
         }
         
         Cookies.set('access_token', access_token, cookieOptions);
@@ -120,8 +120,8 @@ api.interceptors.response.use(
             sameSite: 'none'
           };
           
-          // Используем корневой домен без www
-          cookieOptions.domain = 'dantizt.ru';
+          // Используем точный домен сайта
+          cookieOptions.domain = 'www.dantizt.ru';
         }
         
         Cookies.remove('access_token', cookieOptions);

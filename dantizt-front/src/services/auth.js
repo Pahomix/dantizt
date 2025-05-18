@@ -41,8 +41,8 @@ export const login = async (credentials) => {
         sameSite: 'none'
       };
       
-      // Используем корневой домен без www
-      cookieOptions.domain = 'dantizt.ru';
+      // Используем точный домен сайта
+      cookieOptions.domain = 'www.dantizt.ru';
     }
     
     if (access_token) {
@@ -118,8 +118,8 @@ export const logout = async () => {
       sameSite: 'none'
     };
     
-    // Используем корневой домен без www
-    cookieOptions.domain = 'dantizt.ru';
+    // Используем точный домен сайта
+    cookieOptions.domain = 'www.dantizt.ru';
   }
   
   Cookies.remove('access_token', cookieOptions);
