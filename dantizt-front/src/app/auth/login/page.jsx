@@ -54,18 +54,6 @@ export default function Login() {
         userRole: Cookies.get('userRole')
       });
       
-      // Дополнительная диагностика куки
-      console.log('All cookies:', document.cookie);
-      console.log('Browser info:', navigator.userAgent);
-      
-      // Попробуем установить тестовую куку без домена
-      Cookies.set('test_cookie', 'test_value', {
-        path: '/',
-        sameSite: 'lax',
-        secure: false
-      });
-      console.log('Test cookie set, value:', Cookies.get('test_cookie'));
-      
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
       // Дополнительная проверка куки

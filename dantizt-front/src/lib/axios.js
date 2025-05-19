@@ -25,25 +25,11 @@ api.interceptors.request.use(
     console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, config.data);
     // Проверяем, что мы на клиенте
     if (typeof window !== 'undefined') {
-      // Получаем токен с помощью js-cookie или из document.cookie
+      // Получаем токен с помощью js-cookie
       const token = Cookies.get('access_token');
       
-      // Функция для получения значения куки из document.cookie
-      const getCookieValue = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return undefined;
-      };
-      
-      // Пробуем получить токен из обычных или нативных куки
-      const accessToken = token || getCookieValue('access_token_native');
-      
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-        console.log('[API] Using token for authorization');
-      } else {
-        console.log('[API] No token found for authorization');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
     return config;

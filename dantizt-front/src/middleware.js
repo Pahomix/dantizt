@@ -52,24 +52,12 @@ export function middleware(request) {
   const accessToken = request.cookies.get('access_token')?.value;
   const refreshToken = request.cookies.get('refresh_token')?.value;
   
-  // Проверяем также нативные куки
-  const accessTokenNative = request.cookies.get('access_token_native')?.value;
-  const refreshTokenNative = request.cookies.get('refresh_token_native')?.value;
-  
-  // Выводим все куки для диагностики
-  console.log('Middleware - All cookies:', request.cookies.getAll().map(c => c.name));
   console.log('Middleware - Access token:', !!accessToken);
   console.log('Middleware - Refresh token:', !!refreshToken);
-  console.log('Middleware - Native Access token:', !!accessTokenNative);
-  console.log('Middleware - Native Refresh token:', !!refreshTokenNative);
 
-  // Проверяем наличие токенов в обычных или нативных куках
-  const hasAccessToken = accessToken || accessTokenNative;
-  const hasRefreshToken = refreshToken || refreshTokenNative;
-  
-  // Если нет токенов ни в обычных, ни в нативных куках, редиректим на страницу входа
-  if (!hasAccessToken && !hasRefreshToken) {
-    console.log('Middleware - No tokens found in any cookies, redirecting to login');
+  // Если нет токенов, редиректим на страницу входа
+  if (!accessToken && !refreshToken) {
+    console.log('Middleware - No tokens found, redirecting to login');
     
     // Используем исправленный URL для создания адреса перенаправления
     const loginUrl = new URL('/auth/login', url.origin);
@@ -77,52 +65,39 @@ export function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Получаем роль из куки (обычных или нативных)
-  const userRoleCookie = request.cookies.get('userRole');
-  const userRoleNativeCookie = request.cookies.get('userRole_native');
-  const userRole = userRoleCookie?.value || userRoleNativeCookie?.value;
-  
-  console.log('Middleware - User role cookie:', userRoleCookie ? userRoleCookie.name : 'not found');
-  console.log('Middleware - User role native cookie:', userRoleNativeCookie ? userRoleNativeCookie.name : 'not found');
-  console.log('Middleware - User role value:', userRole);
-  
-  // Если роль не найдена, но есть токены, используем роль по умолчанию
-  const effectiveRole = userRole || (hasAccessToken || hasRefreshToken ? 'user' : null);
+  // Получаем роль из куки
+  const userRole = request.cookies.get('userRole')?.value;
+  console.log('Middleware - User role:', userRole);
 
   // Проверяем доступ к маршруту в зависимости от роли
-  const allowedRoutes = roleRoutes[effectiveRole] || [];
+  const allowedRoutes = roleRoutes[userRole] || [];
   const hasAccess = allowedRoutes.some(route => pathname.startsWith(route));
 
-  console.log('Middleware - Effective role:', effectiveRole);
   console.log('Middleware - Allowed routes:', allowedRoutes);
   console.log('Middleware - Has access:', hasAccess);
 
   // Если пользователь пытается зайти на главную, редиректим в зависимости от роли
   if (pathname === '/') {
-    if (effectiveRole === 'admin') {
-      console.log('Middleware - Admin detected, redirecting to admin dashboard');
+    if (userRole === 'admin') {
       return NextResponse.redirect(new URL('/admin/statistics', url.origin));
-    } else if (effectiveRole === 'doctor') {
-      console.log('Middleware - Doctor detected, redirecting to doctor dashboard');
-      return NextResponse.redirect(new URL('/doctor/appointments', url.origin));
-    } else if (effectiveRole === 'patient') {
-      console.log('Middleware - Patient detected, redirecting to patient dashboard');
-      return NextResponse.redirect(new URL('/patient/appointments', url.origin));
-    } else if (effectiveRole === 'reception') {
-      console.log('Middleware - Reception detected, redirecting to reception dashboard');
+    } else if (userRole === 'doctor') {
+      return NextResponse.redirect(new URL('/doctor', url.origin));
+    } else if (userRole === 'patient') {
+      return NextResponse.redirect(new URL('/patient', url.origin));
+    } else if (userRole === 'reception') {
       return NextResponse.redirect(new URL('/reception/dashboard', url.origin));
+    } else {
+      return NextResponse.redirect(new URL('/auth/login', url.origin));
     }
   }
 
-  // Если нет доступа, редиректим на домашнюю страницу для роли
+  // Если нет доступа к маршруту, редиректим на главную страницу роли
   if (!hasAccess) {
     console.log('Middleware - No access, redirecting to role home');
-    const roleHome = effectiveRole === 'admin' ? '/admin/statistics' : 
-                    effectiveRole === 'doctor' ? '/doctor/appointments' : 
-                    effectiveRole === 'patient' ? '/patient/appointments' : 
-                    effectiveRole === 'reception' ? '/reception/dashboard' : '/';
-    
-    console.log('Middleware - Redirecting to:', roleHome);
+    const roleHome = userRole === 'admin' ? '/admin/statistics' : 
+                    userRole === 'doctor' ? '/doctor' : 
+                    userRole === 'patient' ? '/patient' : 
+                    userRole === 'reception' ? '/reception/dashboard' : '/';
     return NextResponse.redirect(new URL(roleHome, url.origin));
   }
 
