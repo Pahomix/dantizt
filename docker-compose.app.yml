@@ -34,15 +34,15 @@ services:
     build:
       context: ./dantizt-front
       args:
-        - NEXT_PUBLIC_API_URL=http://www.dantizt.ru/api/v1
+        - NEXT_PUBLIC_API_URL=https://www.dantizt.ru/api/v1
     container_name: dantizt_front
     volumes:
       - ./dantizt-front:/app
       - /app/node_modules
       - /app/.next
     environment:
-      - NEXT_PUBLIC_API_URL=http://www.dantizt.ru/api/v1
-      - NEXT_PUBLIC_BASE_URL=http://www.dantizt.ru
+      - NEXT_PUBLIC_API_URL=https://www.dantizt.ru/api/v1
+      - NEXT_PUBLIC_BASE_URL=https://www.dantizt.ru
     networks:
       - internal_network
     depends_on:
