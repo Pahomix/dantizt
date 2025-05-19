@@ -25,8 +25,8 @@ api.interceptors.request.use(
     console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, config.data);
     // Проверяем, что мы на клиенте
     if (typeof window !== 'undefined') {
-      // Получаем токен с помощью js-cookie
-      const token = Cookies.get('access_token');
+      // Получаем токен с помощью js-cookie (пробуем оба варианта - с суффиксом _native и без него)
+      const token = Cookies.get('access_token_native') || Cookies.get('access_token');
       
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -68,7 +68,7 @@ api.interceptors.response.use(
           path: '/',
           expires: 7,
           sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-          secure: false // Явно указываем, что не используем secure для HTTP
+          secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
         };
         
         // Добавляем домен в продакшн режиме
@@ -77,7 +77,9 @@ api.interceptors.response.use(
           console.log('Устанавливаем куки с доменом .dantizt.ru при обновлении токена');
         }
         
+        // Устанавливаем куки с обоими именами для совместимости
         Cookies.set('access_token', access_token, cookieOptions);
+        Cookies.set('access_token_native', access_token, cookieOptions);
         
         // Повторяем оригинальный запрос с новым токеном
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -92,7 +94,7 @@ api.interceptors.response.use(
         const cookieOptions = {
           path: '/',
           sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-          secure: false // Явно указываем, что не используем secure для HTTP
+          secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
         };
         
         // Добавляем домен в продакшн режиме
@@ -101,9 +103,15 @@ api.interceptors.response.use(
           console.log('Удаляем куки с доменом .dantizt.ru при ошибке обновления токена');
         }
         
+        // Удаляем куки с обоими именами для совместимости
         Cookies.remove('access_token', cookieOptions);
+        Cookies.remove('access_token_native', cookieOptions);
+        
         Cookies.remove('refresh_token', cookieOptions);
+        Cookies.remove('refresh_token_native', cookieOptions);
+        
         Cookies.remove('userRole', cookieOptions);
+        Cookies.remove('userRole_native', cookieOptions);
         window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       }

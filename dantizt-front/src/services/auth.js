@@ -24,7 +24,7 @@ export const login = async (credentials) => {
       path: '/',
       expires: 7,
       sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-      secure: false // Явно указываем, что не используем secure для HTTP
+      secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
     };
     
     // Добавляем домен в продакшн режиме
@@ -34,16 +34,20 @@ export const login = async (credentials) => {
     }
     
     if (access_token) {
+      // Устанавливаем куки с обоими именами для совместимости
       Cookies.set('access_token', access_token, cookieOptions);
-      console.log('Access token cookie set');
+      Cookies.set('access_token_native', access_token, cookieOptions);
+      console.log('Access token cookies set');
     }
     if (refresh_token) {
       Cookies.set('refresh_token', refresh_token, cookieOptions);
-      console.log('Refresh token cookie set');
+      Cookies.set('refresh_token_native', refresh_token, cookieOptions);
+      console.log('Refresh token cookies set');
     }
     if (role) {
       Cookies.set('userRole', role, cookieOptions);
-      console.log('User role cookie set:', role);
+      Cookies.set('userRole_native', role, cookieOptions);
+      console.log('User role cookies set:', role);
     }
   }
   
@@ -89,8 +93,8 @@ export const logout = async () => {
   // Настройки, соответствующие настройкам на сервере
   const cookieOptions = {
     path: '/',
-    sameSite: 'strict',
-    secure: false // Явно указываем, что не используем secure для HTTP
+    sameSite: 'lax',
+    secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
   };
   
   // Добавляем домен в продакшн режиме
@@ -99,9 +103,15 @@ export const logout = async () => {
     console.log('Удаляем куки с доменом .dantizt.ru');
   }
   
+  // Удаляем куки с обоими именами для совместимости
   Cookies.remove('access_token', cookieOptions);
+  Cookies.remove('access_token_native', cookieOptions);
+  
   Cookies.remove('refresh_token', cookieOptions);
+  Cookies.remove('refresh_token_native', cookieOptions);
+  
   Cookies.remove('userRole', cookieOptions);
+  Cookies.remove('userRole_native', cookieOptions);
   
   // Не выполняем редирект здесь, так как это делается в компоненте Navbar
   

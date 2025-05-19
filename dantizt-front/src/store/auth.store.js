@@ -36,12 +36,14 @@ export const useAuthStore = create(
           
           // Очищаем куки при выходе с правильными параметрами
           const cookieOptions = {
-            path: '/'
+            path: '/',
+            sameSite: 'lax',
+            secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
           };
           
           // Добавляем домен только в продакшн режиме
           if (!isLocalhost) {
-            cookieOptions.domain = 'www.dantizt.ru';
+            cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости
           }
           
           Cookies.remove('access_token', cookieOptions);
@@ -70,17 +72,28 @@ export const useAuthStore = create(
           
           if (data?.email) {
             // Обновляем токены из ответа
+            // Определяем, находимся ли мы в режиме разработки
+            const isLocalhost = typeof window !== 'undefined' && 
+              (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+            
+            // Настройки куки
+            const cookieOptions = {
+              path: '/',
+              expires: 7,
+              sameSite: 'lax',
+              secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
+            };
+            
+            // Добавляем домен в продакшн режиме
+            if (!isLocalhost) {
+              cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости
+            }
+            
             if (data.access_token) {
-              Cookies.set('access_token', data.access_token, {
-                secure: false,
-                sameSite: 'lax'
-              });
+              Cookies.set('access_token', data.access_token, cookieOptions);
             }
             if (data.refresh_token) {
-              Cookies.set('refresh_token', data.refresh_token, {
-                secure: false,
-                sameSite: 'lax'
-              });
+              Cookies.set('refresh_token', data.refresh_token, cookieOptions);
             }
             
             // Обновляем состояние

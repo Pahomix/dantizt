@@ -48,9 +48,9 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  // Получаем токены из куки
-  const accessToken = request.cookies.get('access_token')?.value;
-  const refreshToken = request.cookies.get('refresh_token')?.value;
+  // Получаем токены из куки (пробуем оба варианта - с суффиксом _native и без него)
+  const accessToken = request.cookies.get('access_token_native')?.value || request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token_native')?.value || request.cookies.get('refresh_token')?.value;
   
   console.log('Middleware - Access token:', !!accessToken);
   console.log('Middleware - Refresh token:', !!refreshToken);
@@ -65,8 +65,8 @@ export function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Получаем роль из куки
-  const userRole = request.cookies.get('userRole')?.value;
+  // Получаем роль из куки (пробуем оба варианта - с суффиксом _native и без него)
+  const userRole = request.cookies.get('userRole_native')?.value || request.cookies.get('userRole')?.value;
   console.log('Middleware - User role:', userRole);
 
   // Проверяем доступ к маршруту в зависимости от роли
