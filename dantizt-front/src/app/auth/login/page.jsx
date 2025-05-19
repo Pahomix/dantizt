@@ -48,44 +48,38 @@ export default function Login() {
       toast.success('Вы успешно вошли в систему. Перенаправляем вас...');
       
       // Проверяем, что куки установлены
-      // Используем document.cookie вместо Cookies.get для прямого доступа к куки
-      console.log('Document cookies after login:', document.cookie);
-      
-      // Функция для получения значения куки по имени
-      const getCookieValue = (name) => {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? match[2] : undefined;
-      };
-      
-      console.log('Cookies after login (manual check):', {
-        access_token: getCookieValue('access_token'),
-        refresh_token: getCookieValue('refresh_token'),
-        userRole: getCookieValue('userRole')
+      console.log('Cookies after login:', {
+        access_token: Cookies.get('access_token'),
+        refresh_token: Cookies.get('refresh_token'),
+        userRole: Cookies.get('userRole')
       });
+      
+      // Дополнительная диагностика куки
+      console.log('All cookies:', document.cookie);
+      console.log('Browser info:', navigator.userAgent);
+      
+      // Попробуем установить тестовую куку без домена
+      Cookies.set('test_cookie', 'test_value', {
+        path: '/',
+        sameSite: 'lax',
+        secure: false
+      });
+      console.log('Test cookie set, value:', Cookies.get('test_cookie'));
       
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
       // Дополнительная проверка куки
       setTimeout(() => {
         // Еще раз проверяем куки перед перенаправлением
-        console.log('Document cookies before redirect:', document.cookie);
-        
         const cookies = {
-          access_token: getCookieValue('access_token'),
-          refresh_token: getCookieValue('refresh_token'),
-          userRole: getCookieValue('userRole')
+          access_token: Cookies.get('access_token'),
+          refresh_token: Cookies.get('refresh_token'),
+          userRole: Cookies.get('userRole')
         };
-        console.log('Cookies before redirect (manual check):', cookies);
+        console.log('Cookies before redirect:', cookies);
         
-        // Если куки не обнаружены, пробуем использовать токены из ответа API
-        if (!cookies.access_token && response.data.access_token) {
-          console.log('Using tokens from API response for redirect');
-          // Добавляем токены в URL для передачи в middleware
-          window.location.href = `${redirectPath}?access_token=${response.data.access_token}&refresh_token=${response.data.refresh_token}&role=${response.data.role}`;
-        } else {
-          // Перенаправляем на страницу в любом случае
-          window.location.href = redirectPath;
-        }
+        // Перенаправляем на страницу в любом случае
+        window.location.href = redirectPath;
       }, 2000); // Увеличиваем задержку до 2 секунд, чтобы убедиться, что куки успели установиться
     } catch (error) {
       console.error('Login error:', error);

@@ -49,60 +49,23 @@ export function middleware(request) {
   }
 
   // Получаем токены из куки
-  let accessToken = request.cookies.get('access_token')?.value;
-  let refreshToken = request.cookies.get('refresh_token')?.value;
-  let userRole = request.cookies.get('userRole')?.value;
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
   
-  // Проверяем, есть ли токены в URL-параметрах (запасной вариант, если куки не работают)
-  const urlParams = new URLSearchParams(url.search);
-  const urlAccessToken = urlParams.get('access_token');
-  const urlRefreshToken = urlParams.get('refresh_token');
-  const urlRole = urlParams.get('role');
+  // Проверяем также нативные куки
+  const accessTokenNative = request.cookies.get('access_token_native')?.value;
+  const refreshTokenNative = request.cookies.get('refresh_token_native')?.value;
   
-  // Если есть токены в URL, используем их и перенаправляем на ту же страницу без параметров
-  if (urlAccessToken && urlRefreshToken && urlRole) {
-    console.log('Middleware - Found tokens in URL parameters');
-    accessToken = urlAccessToken;
-    refreshToken = urlRefreshToken;
-    userRole = urlRole;
-    
-    // Создаем новый Response с куки
-    const response = NextResponse.redirect(new URL(pathname, url.origin));
-    
-    // Устанавливаем куки в ответ
-    response.cookies.set('access_token', accessToken, {
-      path: '/',
-      sameSite: 'lax',
-      secure: false,
-      domain: '.dantizt.ru',
-      httpOnly: true
-    });
-    
-    response.cookies.set('refresh_token', refreshToken, {
-      path: '/',
-      sameSite: 'lax',
-      secure: false,
-      domain: '.dantizt.ru',
-      httpOnly: true
-    });
-    
-    response.cookies.set('userRole', userRole, {
-      path: '/',
-      sameSite: 'lax',
-      secure: false,
-      domain: '.dantizt.ru'
-    });
-    
-    console.log('Middleware - Set cookies from URL parameters');
-    return response;
-  }
-  
+  // Выводим все куки для диагностики
+  console.log('Middleware - All cookies:', request.cookies.getAll());
   console.log('Middleware - Access token:', !!accessToken);
   console.log('Middleware - Refresh token:', !!refreshToken);
+  console.log('Middleware - Native Access token:', !!accessTokenNative);
+  console.log('Middleware - Native Refresh token:', !!refreshTokenNative);
 
-  // Если нет токенов, редиректим на страницу входа
-  if (!accessToken && !refreshToken) {
-    console.log('Middleware - No tokens found, redirecting to login');
+  // Если нет токенов ни в обычных, ни в нативных куках, редиректим на страницу входа
+  if ((!accessToken && !refreshToken) && (!accessTokenNative && !refreshTokenNative)) {
+    console.log('Middleware - No tokens found in any cookies, redirecting to login');
     
     // Используем исправленный URL для создания адреса перенаправления
     const loginUrl = new URL('/auth/login', url.origin);
@@ -110,8 +73,9 @@ export function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Получаем роль из куки или из URL-параметров
-  console.log('Middleware - User role:', userRole);
+  // Получаем роль из куки
+  const userRole = request.cookies.get('userRole')?.value || request.cookies.get('userRole_native')?.value;
+  console.log('Middleware - User role from cookies:', userRole);
 
   // Проверяем доступ к маршруту в зависимости от роли
   const allowedRoutes = roleRoutes[userRole] || [];

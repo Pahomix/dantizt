@@ -33,17 +33,52 @@ export const login = async (credentials) => {
       console.log('Устанавливаем куки с доменом .dantizt.ru');
     }
     
+    // Функция для установки куки с использованием document.cookie
+    const setCookieNative = (name, value, options) => {
+      let cookieString = `${name}=${encodeURIComponent(value)}`;
+      
+      if (options.expires) {
+        const date = new Date();
+        date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+        cookieString += `; expires=${date.toUTCString()}`;
+      }
+      
+      if (options.path) cookieString += `; path=${options.path}`;
+      if (options.domain) cookieString += `; domain=${options.domain}`;
+      if (options.sameSite) cookieString += `; samesite=${options.sameSite}`;
+      if (options.secure) cookieString += `; secure`;
+      
+      document.cookie = cookieString;
+      console.log(`Native cookie set: ${name}=${value} with options:`, options);
+      return cookieString;
+    };
+    
+    // Устанавливаем куки обоими способами
     if (access_token) {
+      // Используем js-cookie
       Cookies.set('access_token', access_token, cookieOptions);
-      console.log('Access token cookie set');
+      console.log('Access token cookie set via js-cookie');
+      
+      // Используем нативный метод
+      setCookieNative('access_token_native', access_token, cookieOptions);
     }
+    
     if (refresh_token) {
+      // Используем js-cookie
       Cookies.set('refresh_token', refresh_token, cookieOptions);
-      console.log('Refresh token cookie set');
+      console.log('Refresh token cookie set via js-cookie');
+      
+      // Используем нативный метод
+      setCookieNative('refresh_token_native', refresh_token, cookieOptions);
     }
+    
     if (role) {
+      // Используем js-cookie
       Cookies.set('userRole', role, cookieOptions);
-      console.log('User role cookie set:', role);
+      console.log(`User role cookie set via js-cookie: ${role}`);
+      
+      // Используем нативный метод
+      setCookieNative('userRole_native', role, cookieOptions);
     }
   }
   
