@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 // Базовый URL для редиректов
 const IS_DEV = process.env.NODE_ENV === 'development';
-const BASE_URL = IS_DEV ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://www.dantizt.ru');
+const BASE_URL = IS_DEV ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.dantizt.ru');
 
 // Для отладки
 console.log('Middleware - Using BASE_URL:', BASE_URL);
