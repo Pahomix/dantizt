@@ -48,12 +48,52 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  // Получаем токены из куки (пробуем оба варианта - с суффиксом _native и без него)
-  const accessToken = request.cookies.get('access_token_native')?.value || request.cookies.get('access_token')?.value;
-  const refreshToken = request.cookies.get('refresh_token_native')?.value || request.cookies.get('refresh_token')?.value;
+  // Выводим все куки для диагностики
+  console.log('Middleware - All cookies:', request.cookies.getAll());
   
-  console.log('Middleware - Access token:', !!accessToken);
-  console.log('Middleware - Refresh token:', !!refreshToken);
+  // Проверяем каждую куки по отдельности
+  console.log('Middleware - access_token cookie:', request.cookies.get('access_token'));
+  console.log('Middleware - access_token_native cookie:', request.cookies.get('access_token_native'));
+  console.log('Middleware - refresh_token cookie:', request.cookies.get('refresh_token'));
+  console.log('Middleware - refresh_token_native cookie:', request.cookies.get('refresh_token_native'));
+  console.log('Middleware - userRole cookie:', request.cookies.get('userRole'));
+  console.log('Middleware - userRole_native cookie:', request.cookies.get('userRole_native'));
+  
+  // Получаем токены из куки (пробуем оба варианта - с суффиксом _native и без него)
+  // Добавляем проверку через строку куки для надежности
+  
+  // Получаем все куки как строку
+  const cookieHeader = request.headers.get('cookie') || '';
+  console.log('Middleware - Cookie header:', cookieHeader);
+  
+  // Парсим куки из заголовка
+  const parseCookies = (cookieString) => {
+    const cookies = {};
+    cookieString.split(';').forEach(cookie => {
+      const [name, value] = cookie.trim().split('=');
+      if (name && value) cookies[name] = value;
+    });
+    return cookies;
+  };
+  
+  const parsedCookies = parseCookies(cookieHeader);
+  console.log('Middleware - Parsed cookies:', parsedCookies);
+  
+  // Получаем токены из разных источников
+  const accessToken = 
+    request.cookies.get('access_token_native')?.value || 
+    request.cookies.get('access_token')?.value || 
+    parsedCookies['access_token_native'] || 
+    parsedCookies['access_token'];
+    
+  const refreshToken = 
+    request.cookies.get('refresh_token_native')?.value || 
+    request.cookies.get('refresh_token')?.value || 
+    parsedCookies['refresh_token_native'] || 
+    parsedCookies['refresh_token'];
+  
+  console.log('Middleware - Access token found:', !!accessToken);
+  console.log('Middleware - Refresh token found:', !!refreshToken);
 
   // Если нет токенов, редиректим на страницу входа
   if (!accessToken && !refreshToken) {
@@ -66,7 +106,11 @@ export function middleware(request) {
   }
 
   // Получаем роль из куки (пробуем оба варианта - с суффиксом _native и без него)
-  const userRole = request.cookies.get('userRole_native')?.value || request.cookies.get('userRole')?.value;
+  const userRole = 
+    request.cookies.get('userRole_native')?.value || 
+    request.cookies.get('userRole')?.value || 
+    parsedCookies['userRole_native'] || 
+    parsedCookies['userRole'];
   console.log('Middleware - User role:', userRole);
 
   // Проверяем доступ к маршруту в зависимости от роли
