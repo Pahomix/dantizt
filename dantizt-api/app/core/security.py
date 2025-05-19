@@ -21,10 +21,10 @@ SECRET_KEY = settings.SECRET_KEY
 # Настройки cookie
 COOKIE_SETTINGS = {
     "httponly": True,
-    "secure": False,  # Отключено, так как используем HTTP
-    "samesite": "lax",  # Используем 'lax' для лучшей совместимости с браузерами
+    "secure": settings.COOKIE_SECURE,  # Теперь True для HTTPS
+    "samesite": settings.COOKIE_SAMESITE,  # Используем значение из настроек
     "path": "/",
-    "domain": ".dantizt.ru"  # Добавляем точку перед доменом для совместимости со старыми браузерами
+    "domain": settings.COOKIE_DOMAIN  # Используем домен из настроек
 }
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -113,8 +113,8 @@ def clear_auth_cookies(response: Response):
         response.delete_cookie(
             key=key,
             path="/",
-            # Не указываем домен, чтобы куки удалялись на текущем домене
-            domain=None,
+            # Используем тот же домен, что и при установке куки
+            domain=settings.COOKIE_DOMAIN,
             secure=COOKIE_SETTINGS["secure"],
             httponly=COOKIE_SETTINGS["httponly"],
             samesite=COOKIE_SETTINGS["samesite"]

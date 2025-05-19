@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 // Определяем URL API в зависимости от окружения
 const IS_DEV = process.env.NODE_ENV === 'development';
-const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'http://www.dantizt.ru/api/v1';
+const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'https://www.dantizt.ru/api/v1';
 const API_URL_DEV = process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:8000/api/v1';
 
 // Используем продакшн URL или URL для разработки

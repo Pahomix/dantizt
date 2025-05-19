@@ -23,8 +23,8 @@ export function middleware(request) {
   // В режиме разработки не заменяем localhost на реальный домен
   if (!IS_DEV && url.hostname === 'localhost') {
     url.hostname = new URL(BASE_URL).hostname;
-    // Не меняем протокол, чтобы не было принудительного перехода на HTTPS
-    // url.protocol = new URL(BASE_URL).protocol;
+    // Теперь меняем протокол на HTTPS
+    url.protocol = 'https:';
   }
   
   // Удаляем порт из URL только в продакшн режиме
@@ -78,6 +78,11 @@ export function middleware(request) {
 
   // Если пользователь пытается зайти на главную, редиректим в зависимости от роли
   if (pathname === '/') {
+    // Если нет токенов, не редиректим на дашборд
+    if (!accessToken && !refreshToken) {
+      return NextResponse.next();
+    }
+    
     if (userRole === 'admin') {
       return NextResponse.redirect(new URL('/admin/statistics', url.origin));
     } else if (userRole === 'doctor') {
@@ -87,17 +92,32 @@ export function middleware(request) {
     } else if (userRole === 'reception') {
       return NextResponse.redirect(new URL('/reception/dashboard', url.origin));
     } else {
-      return NextResponse.redirect(new URL('/auth/login', url.origin));
+      // Если роль неизвестна, но есть токены, просто пропускаем
+      return NextResponse.next();
     }
   }
 
   // Если нет доступа к маршруту, редиректим на главную страницу роли
   if (!hasAccess) {
     console.log('Middleware - No access, redirecting to role home');
+    
+    // Если это /dashboard, и нет роли, перенаправляем на /auth/login
+    if (pathname === '/dashboard' && !userRole) {
+      console.log('Middleware - Dashboard without role, redirecting to login');
+      return NextResponse.redirect(new URL('/auth/login', url.origin));
+    }
+    
     const roleHome = userRole === 'admin' ? '/admin/statistics' : 
                     userRole === 'doctor' ? '/doctor' : 
                     userRole === 'patient' ? '/patient' : 
-                    userRole === 'reception' ? '/reception/dashboard' : '/';
+                    userRole === 'reception' ? '/reception/dashboard' : '/auth/login';
+                    
+    // Избегаем циклических перенаправлений
+    if (pathname === roleHome) {
+      console.log('Middleware - Avoiding redirect loop');
+      return NextResponse.next();
+    }
+    
     return NextResponse.redirect(new URL(roleHome, url.origin));
   }
 

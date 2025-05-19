@@ -19,15 +19,24 @@ class Settings(BaseSettings):
     WORKERS_COUNT: int = 1
     
     # Frontend
-    FRONTEND_URL: str = "http://dantizt.ru" 
+    FRONTEND_URL: str = "https://dantizt.ru" 
     FRONTEND_DEV_URL: str = "http://localhost:3000" 
     
     # CORS
     CORS_ORIGINS: List[str] = [
+        # Локальные URL для разработки
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001"
+        "http://127.0.0.1:3001",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        # Продакшн URL с HTTPS
+        "https://www.dantizt.ru",
+        "https://dantizt.ru",
+        # Продакшн URL с HTTP (для редиректа на HTTPS)
+        "http://www.dantizt.ru",
+        "http://dantizt.ru"
     ]
     
     # Database
@@ -46,9 +55,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Cookie settings
-    COOKIE_SECURE: bool = False  # В продакшене установить True
-    COOKIE_SAMESITE: str = "none"  # В продакшене установить "lax"
-    COOKIE_DOMAIN: str | None = None
+    COOKIE_SECURE: bool = True  # Требуется для HTTPS
+    COOKIE_SAMESITE: str = "lax"  # Более безопасный вариант для продакшена
+    COOKIE_DOMAIN: str = "dantizt.ru"  # Указываем домен для cookie
     
     # Admin
     ADMIN_EMAIL: str = "admin@example.com"
