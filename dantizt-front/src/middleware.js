@@ -49,8 +49,53 @@ export function middleware(request) {
   }
 
   // Получаем токены из куки
-  const accessToken = request.cookies.get('access_token')?.value;
-  const refreshToken = request.cookies.get('refresh_token')?.value;
+  let accessToken = request.cookies.get('access_token')?.value;
+  let refreshToken = request.cookies.get('refresh_token')?.value;
+  let userRole = request.cookies.get('userRole')?.value;
+  
+  // Проверяем, есть ли токены в URL-параметрах (запасной вариант, если куки не работают)
+  const urlParams = new URLSearchParams(url.search);
+  const urlAccessToken = urlParams.get('access_token');
+  const urlRefreshToken = urlParams.get('refresh_token');
+  const urlRole = urlParams.get('role');
+  
+  // Если есть токены в URL, используем их и перенаправляем на ту же страницу без параметров
+  if (urlAccessToken && urlRefreshToken && urlRole) {
+    console.log('Middleware - Found tokens in URL parameters');
+    accessToken = urlAccessToken;
+    refreshToken = urlRefreshToken;
+    userRole = urlRole;
+    
+    // Создаем новый Response с куки
+    const response = NextResponse.redirect(new URL(pathname, url.origin));
+    
+    // Устанавливаем куки в ответ
+    response.cookies.set('access_token', accessToken, {
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+      domain: '.dantizt.ru',
+      httpOnly: true
+    });
+    
+    response.cookies.set('refresh_token', refreshToken, {
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+      domain: '.dantizt.ru',
+      httpOnly: true
+    });
+    
+    response.cookies.set('userRole', userRole, {
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+      domain: '.dantizt.ru'
+    });
+    
+    console.log('Middleware - Set cookies from URL parameters');
+    return response;
+  }
   
   console.log('Middleware - Access token:', !!accessToken);
   console.log('Middleware - Refresh token:', !!refreshToken);
@@ -65,8 +110,7 @@ export function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Получаем роль из куки
-  const userRole = request.cookies.get('userRole')?.value;
+  // Получаем роль из куки или из URL-параметров
   console.log('Middleware - User role:', userRole);
 
   // Проверяем доступ к маршруту в зависимости от роли
