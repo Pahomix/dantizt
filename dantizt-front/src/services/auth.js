@@ -29,8 +29,8 @@ export const login = async (credentials) => {
     
     // Добавляем домен в продакшн режиме
     if (!isLocalhost) {
-      cookieOptions.domain = 'www.dantizt.ru';
-      console.log('Устанавливаем куки с доменом www.dantizt.ru');
+      cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
+      console.log('Устанавливаем куки с доменом dantizt.ru');
     }
     
     if (access_token) {
@@ -95,8 +95,8 @@ export const logout = async () => {
   
   // Добавляем домен в продакшн режиме
   if (!isLocalhost) {
-    cookieOptions.domain = 'www.dantizt.ru';
-    console.log('Удаляем куки с доменом www.dantizt.ru');
+    cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
+    console.log('Удаляем куки с доменом dantizt.ru');
   }
   
   Cookies.remove('access_token', cookieOptions);

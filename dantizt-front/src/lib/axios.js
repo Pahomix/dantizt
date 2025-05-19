@@ -73,8 +73,8 @@ api.interceptors.response.use(
         
         // Добавляем домен в продакшн режиме
         if (!isLocalhost) {
-          cookieOptions.domain = 'www.dantizt.ru';
-          console.log('Устанавливаем куки с доменом www.dantizt.ru при обновлении токена');
+          cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
+          console.log('Устанавливаем куки с доменом dantizt.ru при обновлении токена');
         }
         
         Cookies.set('access_token', access_token, cookieOptions);
@@ -97,8 +97,8 @@ api.interceptors.response.use(
         
         // Добавляем домен в продакшн режиме
         if (!isLocalhost) {
-          cookieOptions.domain = 'www.dantizt.ru';
-          console.log('Удаляем куки с доменом www.dantizt.ru при ошибке обновления токена');
+          cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
+          console.log('Удаляем куки с доменом dantizt.ru при ошибке обновления токена');
         }
         
         Cookies.remove('access_token', cookieOptions);

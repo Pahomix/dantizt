@@ -24,7 +24,7 @@ COOKIE_SETTINGS = {
     "secure": False,  # Отключено, так как используем HTTP
     "samesite": "strict",  # Используем 'strict' для аутентификационных куки
     "path": "/",
-    "domain": "www.dantizt.ru"  # Возвращаем явное указание домена
+    "domain": "dantizt.ru"  # Используем корневой домен для доступа ко всем поддоменам
 }
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
