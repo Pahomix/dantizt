@@ -47,24 +47,27 @@ export default function Login() {
       // Добавляем уведомление об успешном входе
       toast.success('Вы успешно вошли в систему. Перенаправляем вас...');
       
-      // Проверяем, что куки установлены
+      // Проверяем, что куки установлены (проверяем оба варианта - с суффиксом _native и без него)
       console.log('Cookies after login:', {
-        access_token: Cookies.get('access_token'),
-        refresh_token: Cookies.get('refresh_token'),
-        userRole: Cookies.get('userRole')
+        access_token: Cookies.get('access_token') || Cookies.get('access_token_native'),
+        refresh_token: Cookies.get('refresh_token') || Cookies.get('refresh_token_native'),
+        userRole: Cookies.get('userRole') || Cookies.get('userRole_native')
       });
       
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
       // Дополнительная проверка куки
       setTimeout(() => {
-        // Еще раз проверяем куки перед перенаправлением
+        // Еще раз проверяем куки перед перенаправлением (проверяем оба варианта - с суффиксом _native и без него)
         const cookies = {
-          access_token: Cookies.get('access_token'),
-          refresh_token: Cookies.get('refresh_token'),
-          userRole: Cookies.get('userRole')
+          access_token: Cookies.get('access_token') || Cookies.get('access_token_native'),
+          refresh_token: Cookies.get('refresh_token') || Cookies.get('refresh_token_native'),
+          userRole: Cookies.get('userRole') || Cookies.get('userRole_native')
         };
         console.log('Cookies before redirect:', cookies);
+        
+        // Дополнительно проверяем все куки
+        console.log('All cookies:', document.cookie);
         
         // Перенаправляем на страницу в любом случае
         window.location.href = redirectPath;
