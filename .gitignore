@@ -49,6 +49,8 @@ out/
 
 # Logs
 logs/
+# Исключаем папку logs в админке
+!dantizt-front/src/app/(protected)/admin/logs/
 *.log
 debug_logs/
 
