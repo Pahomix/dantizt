@@ -19,30 +19,18 @@ export const login = async (credentials) => {
     
     console.log('Setting cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
     
-    // Для продакшна и разработки используем разные настройки
-    let cookieOptions = {};
+    // Настройки, соответствующие настройкам на сервере
+    const cookieOptions = {
+      path: '/',
+      expires: 7,
+      sameSite: 'strict',
+      secure: false // Явно указываем, что не используем secure для HTTP
+    };
     
-    if (isLocalhost) {
-      // Настройки для локальной разработки
-      cookieOptions = {
-        path: '/',
-        expires: 7,
-        sameSite: 'lax',
-        secure: false
-      };
-    } else {
-      // Настройки для продакшна
-      cookieOptions = {
-        path: '/',
-        expires: 7,
-        // Для HTTP сайта не можем использовать secure
-        secure: false,
-        // Используем None вместо Lax для лучшей совместимости
-        sameSite: 'none'
-      };
-      
-      // Используем точный домен сайта
+    // Добавляем домен в продакшн режиме
+    if (!isLocalhost) {
       cookieOptions.domain = 'www.dantizt.ru';
+      console.log('Устанавливаем куки с доменом www.dantizt.ru');
     }
     
     if (access_token) {
@@ -98,28 +86,17 @@ export const logout = async () => {
   console.log('Removing cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
   
   // Удаляем куки при выходе, используя те же параметры, что и при установке
-  // Для продакшна и разработки используем разные настройки
-  let cookieOptions = {};
+  // Настройки, соответствующие настройкам на сервере
+  const cookieOptions = {
+    path: '/',
+    sameSite: 'strict',
+    secure: false // Явно указываем, что не используем secure для HTTP
+  };
   
-  if (isLocalhost) {
-    // Настройки для локальной разработки
-    cookieOptions = {
-      path: '/',
-      sameSite: 'lax',
-      secure: false
-    };
-  } else {
-    // Настройки для продакшна
-    cookieOptions = {
-      path: '/',
-      // Для HTTP сайта не можем использовать secure
-      secure: false,
-      // Используем None вместо Lax для лучшей совместимости
-      sameSite: 'none'
-    };
-    
-    // Используем точный домен сайта
+  // Добавляем домен в продакшн режиме
+  if (!isLocalhost) {
     cookieOptions.domain = 'www.dantizt.ru';
+    console.log('Удаляем куки с доменом www.dantizt.ru');
   }
   
   Cookies.remove('access_token', cookieOptions);

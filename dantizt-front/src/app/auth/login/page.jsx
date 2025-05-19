@@ -56,13 +56,17 @@ export default function Login() {
       
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
+      // Дополнительная проверка куки
       setTimeout(() => {
         // Еще раз проверяем куки перед перенаправлением
-        console.log('Cookies before redirect:', {
+        const cookies = {
           access_token: Cookies.get('access_token'),
           refresh_token: Cookies.get('refresh_token'),
           userRole: Cookies.get('userRole')
-        });
+        };
+        console.log('Cookies before redirect:', cookies);
+        
+        // Перенаправляем на страницу в любом случае
         window.location.href = redirectPath;
       }, 2000); // Увеличиваем задержку до 2 секунд, чтобы убедиться, что куки успели установиться
     } catch (error) {
