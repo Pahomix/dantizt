@@ -67,14 +67,14 @@ api.interceptors.response.use(
         const cookieOptions = {
           path: '/',
           expires: 7,
-          sameSite: 'strict',
+          sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
           secure: false // Явно указываем, что не используем secure для HTTP
         };
         
         // Добавляем домен в продакшн режиме
         if (!isLocalhost) {
-          cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
-          console.log('Устанавливаем куки с доменом dantizt.ru при обновлении токена');
+          cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
+          console.log('Устанавливаем куки с доменом .dantizt.ru при обновлении токена');
         }
         
         Cookies.set('access_token', access_token, cookieOptions);
@@ -91,14 +91,14 @@ api.interceptors.response.use(
         // Настройки, соответствующие настройкам на сервере
         const cookieOptions = {
           path: '/',
-          sameSite: 'strict',
+          sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
           secure: false // Явно указываем, что не используем secure для HTTP
         };
         
         // Добавляем домен в продакшн режиме
         if (!isLocalhost) {
-          cookieOptions.domain = 'dantizt.ru'; // Используем корневой домен для доступа ко всем поддоменам
-          console.log('Удаляем куки с доменом dantizt.ru при ошибке обновления токена');
+          cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
+          console.log('Удаляем куки с доменом .dantizt.ru при ошибке обновления токена');
         }
         
         Cookies.remove('access_token', cookieOptions);

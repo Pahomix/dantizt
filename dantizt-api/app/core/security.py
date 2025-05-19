@@ -22,9 +22,9 @@ SECRET_KEY = settings.SECRET_KEY
 COOKIE_SETTINGS = {
     "httponly": True,
     "secure": False,  # Отключено, так как используем HTTP
-    "samesite": "strict",  # Используем 'strict' для аутентификационных куки
+    "samesite": "lax",  # Используем 'lax' для лучшей совместимости с браузерами
     "path": "/",
-    "domain": "dantizt.ru"  # Используем корневой домен для доступа ко всем поддоменам
+    "domain": ".dantizt.ru"  # Добавляем точку перед доменом для совместимости со старыми браузерами
 }
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
