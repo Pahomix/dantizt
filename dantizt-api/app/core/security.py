@@ -21,10 +21,10 @@ SECRET_KEY = settings.SECRET_KEY
 # Настройки cookie
 COOKIE_SETTINGS = {
     "httponly": True,
-    "secure": settings.COOKIE_SECURE,  # Теперь True для HTTPS
-    "samesite": settings.COOKIE_SAMESITE,  # Используем значение из настроек
+    "secure": True,  # Включаем, так как используем HTTPS
+    "samesite": "lax",  # Используем 'lax' для лучшей совместимости с браузерами
     "path": "/",
-    "domain": settings.COOKIE_DOMAIN  # Используем домен из настроек
+    "domain": None  # Отключаем домен, чтобы куки работали на всех устройствах
 }
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -110,11 +110,11 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str, 
 def clear_auth_cookies(response: Response):
     """Очистка куки при выходе"""
     for key in ["access_token", "refresh_token", "authToken", "userRole"]:
+        # Удаляем куки с теми же настройками, что и при установке
         response.delete_cookie(
             key=key,
             path="/",
-            # Используем тот же домен, что и при установке куки
-            domain=settings.COOKIE_DOMAIN,
+            domain=COOKIE_SETTINGS["domain"],
             secure=COOKIE_SETTINGS["secure"],
             httponly=COOKIE_SETTINGS["httponly"],
             samesite=COOKIE_SETTINGS["samesite"]

@@ -22,16 +22,12 @@ export const login = async (credentials) => {
     // Настройки, соответствующие настройкам на сервере
     const cookieOptions = {
       path: '/',
-      expires: 7,
       sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
       secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
     };
     
-    // Добавляем домен в продакшн режиме
-    if (!isLocalhost) {
-      cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
-      console.log('Устанавливаем куки с доменом .dantizt.ru');
-    }
+    // Не устанавливаем домен, чтобы куки работали на всех устройствах
+    console.log('Устанавливаем куки без явного указания домена');
     
     if (access_token) {
       // Устанавливаем куки с обоими именами для совместимости
@@ -97,11 +93,8 @@ export const logout = async () => {
     secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
   };
   
-  // Добавляем домен в продакшн режиме
-  if (!isLocalhost) {
-    cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
-    console.log('Удаляем куки с доменом .dantizt.ru');
-  }
+  // Не устанавливаем домен, чтобы куки работали на всех устройствах
+  console.log('Удаляем куки без явного указания домена');
   
   // Удаляем куки с обоими именами для совместимости
   Cookies.remove('access_token', cookieOptions);
