@@ -44,34 +44,11 @@ export default function Login() {
       const redirectPath = HOME_ROUTES[response.data.role] || '/dashboard';
       console.log('Login successful, redirecting to:', redirectPath);
       
-      // Добавляем уведомление об успешном входе
-      toast.success('Вы успешно вошли в систему. Перенаправляем вас...');
-      
-      // Проверяем, что куки установлены (проверяем оба варианта - с суффиксом _native и без него)
-      console.log('Cookies after login:', {
-        access_token: Cookies.get('access_token') || Cookies.get('access_token_native'),
-        refresh_token: Cookies.get('refresh_token') || Cookies.get('refresh_token_native'),
-        userRole: Cookies.get('userRole') || Cookies.get('userRole_native')
-      });
-      
       // Используем window.location вместо router.push для более надежного перенаправления
       // Это полностью перезагрузит страницу, что поможет избежать проблем с кешированием
-      // Дополнительная проверка куки
       setTimeout(() => {
-        // Еще раз проверяем куки перед перенаправлением (проверяем оба варианта - с суффиксом _native и без него)
-        const cookies = {
-          access_token: Cookies.get('access_token') || Cookies.get('access_token_native'),
-          refresh_token: Cookies.get('refresh_token') || Cookies.get('refresh_token_native'),
-          userRole: Cookies.get('userRole') || Cookies.get('userRole_native')
-        };
-        console.log('Cookies before redirect:', cookies);
-        
-        // Дополнительно проверяем все куки
-        console.log('All cookies:', document.cookie);
-        
-        // Перенаправляем на страницу в любом случае
         window.location.href = redirectPath;
-      }, 2000); // Увеличиваем задержку до 2 секунд, чтобы убедиться, что куки успели установиться
+      }, 500); // Небольшая задержка, чтобы убедиться, что куки успели установиться
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.detail || 'Ошибка при входе';

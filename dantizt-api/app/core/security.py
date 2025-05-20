@@ -22,9 +22,9 @@ SECRET_KEY = settings.SECRET_KEY
 COOKIE_SETTINGS = {
     "httponly": True,
     "secure": True,  # Включаем, так как используем HTTPS
-    "samesite": "lax",  # Используем 'lax' для лучшей совместимости с браузерами
+    "samesite": "lax",  # Используем 'lax' для лучшей совместимости
     "path": "/",
-    "domain": None  # Отключаем домен, чтобы куки работали на всех устройствах
+    "domain": "dantizt.ru"  # Используем домен без www для совместимости с фронтендом
 }
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -110,14 +110,12 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str, 
 def clear_auth_cookies(response: Response):
     """Очистка куки при выходе"""
     for key in ["access_token", "refresh_token", "authToken", "userRole"]:
-        # Удаляем куки с теми же настройками, что и при установке
         response.delete_cookie(
             key=key,
             path="/",
-            domain=COOKIE_SETTINGS["domain"],
+            domain=None,
             secure=COOKIE_SETTINGS["secure"],
-            httponly=COOKIE_SETTINGS["httponly"],
-            samesite=COOKIE_SETTINGS["samesite"]
+            httponly=COOKIE_SETTINGS["httponly"]
         )
 
 async def get_current_user(

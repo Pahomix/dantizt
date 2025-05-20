@@ -37,19 +37,26 @@ export const useAuthStore = create(
           // Очищаем куки при выходе с правильными параметрами
           const cookieOptions = {
             path: '/',
-            sameSite: 'lax',
-            secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
+            secure: !isLocalhost // Используем secure: true в продакшн режиме для HTTPS
           };
           
           // Добавляем домен только в продакшн режиме
           if (!isLocalhost) {
-            cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости
+            cookieOptions.domain = 'dantizt.ru';
           }
           
+          // Удаляем куки как с суффиксом _native, так и без него
           Cookies.remove('access_token', cookieOptions);
           Cookies.remove('refresh_token', cookieOptions);
           Cookies.remove('userRole', cookieOptions);
-          set(initialState);
+          Cookies.remove('access_token_native', cookieOptions);
+          Cookies.remove('refresh_token_native', cookieOptions);
+          Cookies.remove('userRole_native', cookieOptions);
+          
+          // Добавляем небольшую задержку перед сбросом состояния
+          setTimeout(() => {
+            set(initialState);
+          }, 100);
         }
       },
 
@@ -76,17 +83,15 @@ export const useAuthStore = create(
             const isLocalhost = typeof window !== 'undefined' && 
               (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
             
-            // Настройки куки
             const cookieOptions = {
-              path: '/',
-              expires: 7,
+              secure: !isLocalhost, // Используем secure: true в продакшн режиме для HTTPS
               sameSite: 'lax',
-              secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
+              path: '/'
             };
             
-            // Добавляем домен в продакшн режиме
+            // Добавляем домен только в продакшн режиме
             if (!isLocalhost) {
-              cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости
+              cookieOptions.domain = 'dantizt.ru';
             }
             
             if (data.access_token) {

@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 // Определяем URL API в зависимости от окружения
 const IS_DEV = process.env.NODE_ENV === 'development';
-const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'https://www.dantizt.ru/api/v1';
+const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'https://dantizt.ru/api/v1';
 const API_URL_DEV = process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:8000/api/v1';
 
 // Используем продакшн URL или URL для разработки
@@ -25,8 +25,8 @@ api.interceptors.request.use(
     console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, config.data);
     // Проверяем, что мы на клиенте
     if (typeof window !== 'undefined') {
-      // Получаем токен с помощью js-cookie (пробуем оба варианта - с суффиксом _native и без него)
-      const token = Cookies.get('access_token_native') || Cookies.get('access_token');
+      // Получаем токен с помощью js-cookie
+      const token = Cookies.get('access_token');
       
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -58,60 +58,17 @@ api.interceptors.response.use(
         const response = await api.post('/auth/refresh');
         const { access_token } = response.data;
         
-        // Сохраняем новый токен с правильными настройками
-        // Определяем, находимся ли мы в режиме разработки
-        const isLocalhost = typeof window !== 'undefined' && 
-          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-        
-        // Настройки, соответствующие настройкам на сервере
-        const cookieOptions = {
-          path: '/',
-          expires: 7,
-          sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-          secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
-        };
-        
-        // Добавляем домен в продакшн режиме
-        if (!isLocalhost) {
-          cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
-          console.log('Устанавливаем куки с доменом .dantizt.ru при обновлении токена');
-        }
-        
-        // Устанавливаем куки с обоими именами для совместимости
-        Cookies.set('access_token', access_token, cookieOptions);
-        Cookies.set('access_token_native', access_token, cookieOptions);
+        // Сохраняем новый токен
+        Cookies.set('access_token', access_token);
         
         // Повторяем оригинальный запрос с новым токеном
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return api(originalRequest);
       } catch (refreshError) {
         // Если не удалось обновить токен, выходим из системы
-        // Определяем, находимся ли мы в режиме разработки
-        const isLocalhost = typeof window !== 'undefined' && 
-          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-        
-        // Настройки, соответствующие настройкам на сервере
-        const cookieOptions = {
-          path: '/',
-          sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-          secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
-        };
-        
-        // Добавляем домен в продакшн режиме
-        if (!isLocalhost) {
-          cookieOptions.domain = '.dantizt.ru'; // Добавляем точку перед доменом для совместимости со старыми браузерами
-          console.log('Удаляем куки с доменом .dantizt.ru при ошибке обновления токена');
-        }
-        
-        // Удаляем куки с обоими именами для совместимости
-        Cookies.remove('access_token', cookieOptions);
-        Cookies.remove('access_token_native', cookieOptions);
-        
-        Cookies.remove('refresh_token', cookieOptions);
-        Cookies.remove('refresh_token_native', cookieOptions);
-        
-        Cookies.remove('userRole', cookieOptions);
-        Cookies.remove('userRole_native', cookieOptions);
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
+        Cookies.remove('userRole');
         window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       }

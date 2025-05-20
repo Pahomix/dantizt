@@ -20,10 +20,29 @@ export default function Header() {
       const { logout } = await import('@/services/auth');
       await logout();
       
+      // Добавляем дополнительную проверку для удаления всех куки вручную
+      const Cookies = (await import('js-cookie')).default;
+      
+      // Удаляем все возможные варианты куки
+      const cookieOptions = { path: '/' };
+      Cookies.remove('access_token', cookieOptions);
+      Cookies.remove('refresh_token', cookieOptions);
+      Cookies.remove('userRole', cookieOptions);
+      Cookies.remove('access_token_native', cookieOptions);
+      Cookies.remove('refresh_token_native', cookieOptions);
+      Cookies.remove('userRole_native', cookieOptions);
+      
+      console.log('All cookies removed, redirecting to login page');
+      
       // Используем window.location.href вместо router.push для полной перезагрузки страницы
-      window.location.href = '/auth/login';
+      // Добавляем небольшую задержку, чтобы куки успели удалиться
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 300);
     } catch (error) {
       console.error('Logout error:', error);
+      // В случае ошибки всё равно перенаправляем на страницу входа
+      window.location.href = '/auth/login';
     }
   };
 

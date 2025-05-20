@@ -19,31 +19,28 @@ export const login = async (credentials) => {
     
     console.log('Setting cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
     
-    // Настройки, соответствующие настройкам на сервере
     const cookieOptions = {
-      path: '/',
-      sameSite: 'lax', // Используем 'lax' для лучшей совместимости с браузерами
-      secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
+      secure: !isLocalhost, // Используем secure: true в продакшн режиме для HTTPS
+      sameSite: 'lax',
+      path: '/' // Важно указать path для доступности кук на всех страницах
     };
     
-    // Не устанавливаем домен, чтобы куки работали на всех устройствах
-    console.log('Устанавливаем куки без явного указания домена');
+    // Добавляем домен только в продакшн режиме
+    if (!isLocalhost) {
+      cookieOptions.domain = 'dantizt.ru';
+    }
     
     if (access_token) {
-      // Устанавливаем куки с обоими именами для совместимости
       Cookies.set('access_token', access_token, cookieOptions);
-      Cookies.set('access_token_native', access_token, cookieOptions);
-      console.log('Access token cookies set');
+      console.log('Access token cookie set');
     }
     if (refresh_token) {
       Cookies.set('refresh_token', refresh_token, cookieOptions);
-      Cookies.set('refresh_token_native', refresh_token, cookieOptions);
-      console.log('Refresh token cookies set');
+      console.log('Refresh token cookie set');
     }
     if (role) {
       Cookies.set('userRole', role, cookieOptions);
-      Cookies.set('userRole_native', role, cookieOptions);
-      console.log('User role cookies set:', role);
+      console.log('User role cookie set:', role);
     }
   }
   
@@ -86,29 +83,33 @@ export const logout = async () => {
   console.log('Removing cookies in environment:', isLocalhost ? 'development (localhost)' : 'production');
   
   // Удаляем куки при выходе, используя те же параметры, что и при установке
-  // Настройки, соответствующие настройкам на сервере
   const cookieOptions = {
     path: '/',
-    sameSite: 'lax',
-    secure: !isLocalhost // Используем secure=true для HTTPS в продакшене
+    secure: !isLocalhost // Используем secure: true в продакшн режиме для HTTPS
   };
   
-  // Не устанавливаем домен, чтобы куки работали на всех устройствах
-  console.log('Удаляем куки без явного указания домена');
+  // Добавляем домен только в продакшн режиме
+  if (!isLocalhost) {
+    cookieOptions.domain = 'dantizt.ru';
+  }
   
-  // Удаляем куки с обоими именами для совместимости
+  // Удаляем куки как с суффиксом _native, так и без него
   Cookies.remove('access_token', cookieOptions);
-  Cookies.remove('access_token_native', cookieOptions);
-  
   Cookies.remove('refresh_token', cookieOptions);
-  Cookies.remove('refresh_token_native', cookieOptions);
-  
   Cookies.remove('userRole', cookieOptions);
+  
+  // Удаляем также куки с суффиксом _native
+  Cookies.remove('access_token_native', cookieOptions);
+  Cookies.remove('refresh_token_native', cookieOptions);
   Cookies.remove('userRole_native', cookieOptions);
   
-  // Не выполняем редирект здесь, так как это делается в компоненте Navbar
-  
-  return response;
+  // Добавляем небольшую задержку перед перенаправлением
+  // чтобы куки успели удалиться
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(response);
+    }, 300);
+  });
 };
 
 export const checkAuth = () => api.get('/auth/me');

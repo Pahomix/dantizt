@@ -15,9 +15,9 @@ export default function ProtectedLayout({ children }) {
       console.log('Protected layout - checking auth');
       console.log('Cookies:', document.cookie);
 
-      // Проверяем наличие токенов в куках
-      const accessToken = Cookies.get('access_token');
-      const refreshToken = Cookies.get('refresh_token');
+      // Проверяем наличие токенов в куках (проверяем как с суффиксом _native, так и без него)
+      const accessToken = Cookies.get('access_token') || Cookies.get('access_token_native');
+      const refreshToken = Cookies.get('refresh_token') || Cookies.get('refresh_token_native');
 
       if (!accessToken && !refreshToken) {
         console.log('No tokens found, redirecting to login');
