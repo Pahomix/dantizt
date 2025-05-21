@@ -46,9 +46,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Cookie settings
-    COOKIE_SECURE: bool = False  # В продакшене установить True
-    COOKIE_SAMESITE: str = "none"  # В продакшене установить "lax"
-    COOKIE_DOMAIN: str | None = None
+    COOKIE_SECURE: bool = True  # Включаем для работы с HTTPS
+    COOKIE_SAMESITE: str = "lax"  # Используем lax для продакшена
+    COOKIE_DOMAIN: str | None = "dantizt.ru"  # Устанавливаем домен
     
     # Admin
     ADMIN_EMAIL: str = "admin@example.com"
