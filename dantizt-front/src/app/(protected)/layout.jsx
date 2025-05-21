@@ -14,10 +14,15 @@ export default function ProtectedLayout({ children }) {
     const verifyAuth = async () => {
       console.log('Protected layout - checking auth');
       console.log('Cookies:', document.cookie);
-
-      // Проверяем наличие токенов в куках (проверяем как с суффиксом _native, так и без него)
-      const accessToken = Cookies.get('access_token') || Cookies.get('access_token_native');
+      
+      // Проверяем наличие токенов в куках (проверяем все возможные варианты)
+      const accessToken = Cookies.get('access_token') || Cookies.get('access_token_native') || Cookies.get('authToken');
       const refreshToken = Cookies.get('refresh_token') || Cookies.get('refresh_token_native');
+      
+      // Выводим все куки для отладки
+      console.log('All cookies:', Object.keys(Cookies.get()));
+      console.log('Access token:', accessToken ? 'present' : 'missing');
+      console.log('Refresh token:', refreshToken ? 'present' : 'missing');
 
       if (!accessToken && !refreshToken) {
         console.log('No tokens found, redirecting to login');

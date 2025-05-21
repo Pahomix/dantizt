@@ -3,11 +3,9 @@ import Cookies from 'js-cookie';
 
 // Определяем URL API в зависимости от окружения
 const IS_DEV = process.env.NODE_ENV === 'development';
-const API_URL_PROD = process.env.NEXT_PUBLIC_API_URL_PROD || 'https://dantizt.ru/api/v1';
-const API_URL_DEV = process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:8000/api/v1';
 
-// Используем продакшн URL или URL для разработки
-const API_URL = IS_DEV ? API_URL_DEV : API_URL_PROD;
+// Используем настройки из переменных окружения или значения по умолчанию
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (IS_DEV ? 'http://localhost:8000/api/v1' : 'https://dantizt.ru/api/v1');
 
 console.log('[API] Using API URL:', API_URL);
 
@@ -25,8 +23,11 @@ api.interceptors.request.use(
     console.log(`[API Request] ${config.method.toUpperCase()} ${config.url}`, config.data);
     // Проверяем, что мы на клиенте
     if (typeof window !== 'undefined') {
-      // Получаем токен с помощью js-cookie
-      const token = Cookies.get('access_token');
+      // Получаем токен с помощью js-cookie (проверяем все возможные варианты)
+      const token = Cookies.get('access_token') || Cookies.get('access_token_native') || Cookies.get('authToken');
+      
+      console.log('[API] Using token from cookies:', !!token);
+      console.log('[API] Available cookies:', Object.keys(Cookies.get()));
       
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;

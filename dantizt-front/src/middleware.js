@@ -49,11 +49,18 @@ export function middleware(request) {
   }
 
   // Получаем токены из куки (проверяем как с суффиксом _native, так и без него)
-  const accessToken = request.cookies.get('access_token')?.value || request.cookies.get('access_token_native')?.value;
+  const accessToken = request.cookies.get('access_token')?.value || request.cookies.get('access_token_native')?.value || request.cookies.get('authToken')?.value;
   const refreshToken = request.cookies.get('refresh_token')?.value || request.cookies.get('refresh_token_native')?.value;
   
   console.log('Middleware - Access token:', !!accessToken);
   console.log('Middleware - Refresh token:', !!refreshToken);
+  console.log('Middleware - All cookies:', JSON.stringify(Object.fromEntries([...request.cookies.getAll()].map(c => [c.name, c.value]))));
+  
+  // Добавляем все куки в заголовки для отладки
+  const response = NextResponse.next();
+  if (accessToken) {
+    response.headers.set('x-debug-has-token', 'true');
+  }
 
   // Если нет токенов, редиректим на страницу входа
   if (!accessToken && !refreshToken) {
